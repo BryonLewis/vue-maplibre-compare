@@ -11,10 +11,27 @@ A Vue 3 component for comparing MapLibre maps side-by-side with a draggable slid
 - ⚡ Built with Vue 3 and TypeScript
 - 🔄 Synchronized map movements (pan, zoom, rotate, pitch)
 
+## Demo
+
+![Map comparison with slider at center](https://github.com/user-attachments/assets/142a485c-79de-4751-b49f-5f8d4f3c974e)
+
+*Comparing two different map styles side-by-side*
+
+![Map comparison with slider moved](https://github.com/user-attachments/assets/6bd119c5-7c6f-4d54-ab86-eed08a97c534)
+
+*Drag the slider to reveal more of one map*
+
 ## Installation
 
 ```bash
 npm install vue-maplibre-compare maplibre-gl
+```
+
+**Important:** Don't forget to import the component styles and MapLibre GL CSS:
+
+```typescript
+import 'vue-maplibre-compare/dist/style.css'
+import 'maplibre-gl/dist/maplibre-gl.css'
 ```
 
 ## Usage
@@ -24,6 +41,7 @@ npm install vue-maplibre-compare maplibre-gl
 ```typescript
 import { createApp } from 'vue'
 import MapComparePlugin from 'vue-maplibre-compare'
+import 'vue-maplibre-compare/dist/style.css'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -50,12 +68,60 @@ app.mount('#app')
 <script setup lang="ts">
 import { ref } from 'vue'
 import { MapCompare } from 'vue-maplibre-compare'
+import 'vue-maplibre-compare/dist/style.css'
 
 const styleA = 'https://demotiles.maplibre.org/style.json'
 const styleB = 'https://demotiles.maplibre.org/style.json'
-const layersA = ref(['water', 'roads'])  // Optional: specify which layers to show
-const layersB = ref(['water', 'buildings'])
+
+// Optional: specify which layers to show on each map
+// If empty or not provided, all layers are shown
+const layersA = ref(['water', 'roads', 'buildings'])
+const layersB = ref(['water', 'buildings'])  // roads hidden on map B
 </script>
+```
+
+### With Inline Styles
+
+You can also pass MapLibre `StyleSpecification` objects directly:
+
+```vue
+<script setup lang="ts">
+import { MapCompare } from 'vue-maplibre-compare'
+import type { StyleSpecification } from 'maplibre-gl'
+
+const blueStyle: StyleSpecification = {
+  version: 8,
+  sources: {},
+  layers: [
+    {
+      id: 'background',
+      type: 'background',
+      paint: { 'background-color': '#1e3a8a' }
+    }
+  ]
+}
+
+const redStyle: StyleSpecification = {
+  version: 8,
+  sources: {},
+  layers: [
+    {
+      id: 'background',
+      type: 'background',
+      paint: { 'background-color': '#991b1b' }
+    }
+  ]
+}
+</script>
+
+<template>
+  <MapCompare
+    :mapStyleA="blueStyle"
+    :mapStyleB="redStyle"
+    :center="[0, 0]"
+    :zoom="2"
+  />
+</template>
 ```
 
 ## Props
