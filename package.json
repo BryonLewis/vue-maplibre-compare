@@ -1,0 +1,51 @@
+{
+  "name": "vue-maplibre-compare",
+  "version": "1.0.0",
+  "description": "A Vue 3 component for comparing MapLibre maps side-by-side with a slider",
+  "type": "module",
+  "main": "./dist/vue-maplibre-compare.umd.js",
+  "module": "./dist/vue-maplibre-compare.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/vue-maplibre-compare.es.js",
+      "require": "./dist/vue-maplibre-compare.umd.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite --config vite.config.demo.ts",
+    "build": "vite build",
+    "preview": "vite preview --config vite.config.demo.ts"
+  },
+  "keywords": [
+    "vue",
+    "vue3",
+    "maplibre",
+    "map",
+    "compare",
+    "slider",
+    "comparison"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "maplibre-gl": "^4.0.0 || ^5.0.0",
+    "vue": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@vitejs/plugin-vue": "^6.0.2",
+    "typescript": "^5.9.3",
+    "vite": "^5.4.21",
+    "vite-plugin-dts": "^4.5.4",
+    "vue": "^3.5.24",
+    "vue-tsc": "^2.2.12"
+  },
+  "dependencies": {
+    "maplibre-gl": "^4.0.0 || ^5.0.0"
+  }
+}
