@@ -8,8 +8,9 @@ A Vue 3 component for comparing MapLibre maps side-by-side with a draggable slid
 - 🎨 Support for different MapLibre styles on each side
 - 🔧 Layer visibility control for both maps
 - 📱 Touch and mouse support
-- ⚡ Built with Vue 3 and TypeScript
+- ⚡ Built with Vue 3 and TypeScript using `defineComponent`
 - 🔄 Synchronized map movements (pan, zoom, rotate, pitch)
+- 🎯 Two components: `MapCompare` (different styles) and `LayerCompare` (same style, different layers)
 
 ## Demo
 
@@ -124,12 +125,57 @@ const redStyle: StyleSpecification = {
 </template>
 ```
 
-## Props
+### LayerCompare Component
+
+The `LayerCompare` component uses a single map style and shows different layers on each side:
+
+```vue
+<template>
+  <div style="width: 100%; height: 600px;">
+    <LayerCompare
+      :mapStyle="'https://demotiles.maplibre.org/style.json'"
+      :mapLayersA="['water', 'roads']"
+      :mapLayersB="['water', 'buildings', 'parks']"
+      :center="[-74.5, 40]"
+      :zoom="9"
+    />
+  </div>
+</template>
+
+<script setup lang="ts">
+import { LayerCompare } from 'vue-maplibre-compare'
+import 'vue-maplibre-compare/dist/style.css'
+</script>
+```
+
+## Components
+
+### MapCompare
+
+Compare two different map styles side-by-side.
+
+**Props:**
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | `mapStyleA` | `string \| StyleSpecification` | Yes | - | MapLibre style for left/first map |
 | `mapStyleB` | `string \| StyleSpecification` | Yes | - | MapLibre style for right/second map |
+| `mapLayersA` | `string[]` | No | `[]` | Array of layer IDs to enable in map A. If empty, all layers are shown |
+| `mapLayersB` | `string[]` | No | `[]` | Array of layer IDs to enable in map B. If empty, all layers are shown |
+| `center` | `[number, number]` | No | `[0, 0]` | Initial map center coordinates [lng, lat] |
+| `zoom` | `number` | No | `1` | Initial zoom level |
+| `bearing` | `number` | No | `0` | Initial bearing (rotation) in degrees |
+| `pitch` | `number` | No | `0` | Initial pitch (tilt) in degrees |
+
+### LayerCompare
+
+Compare the same map style with different layer visibility on each side.
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `mapStyle` | `string \| StyleSpecification` | Yes | - | MapLibre style for both maps |
 | `mapLayersA` | `string[]` | No | `[]` | Array of layer IDs to enable in map A. If empty, all layers are shown |
 | `mapLayersB` | `string[]` | No | `[]` | Array of layer IDs to enable in map B. If empty, all layers are shown |
 | `center` | `[number, number]` | No | `[0, 0]` | Initial map center coordinates [lng, lat] |

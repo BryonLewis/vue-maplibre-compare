@@ -43,59 +43,76 @@
   </div>
 </template>
 
-<script setup lang="ts">
-import { ref, computed } from 'vue'
+<script lang="ts">
+import { defineComponent, ref, computed } from 'vue'
 import { MapCompare } from '../../src/index'
 import type { StyleSpecification } from 'maplibre-gl'
 
-// Simple inline styles for testing without external tile servers
-const blueStyle: StyleSpecification = {
-  version: 8,
-  name: 'Simple Blue',
-  sources: {},
-  layers: [
-    {
-      id: 'background',
-      type: 'background',
-      paint: {
-        'background-color': '#1e3a8a'
-      }
+export default defineComponent({
+  name: 'App',
+  components: {
+    MapCompare
+  },
+  setup() {
+    // Simple inline styles for testing without external tile servers
+    const blueStyle: StyleSpecification = {
+      version: 8,
+      name: 'Simple Blue',
+      sources: {},
+      layers: [
+        {
+          id: 'background',
+          type: 'background',
+          paint: {
+            'background-color': '#1e3a8a'
+          }
+        }
+      ]
     }
-  ]
-}
 
-const redStyle: StyleSpecification = {
-  version: 8,
-  name: 'Simple Red',
-  sources: {},
-  layers: [
-    {
-      id: 'background',
-      type: 'background',
-      paint: {
-        'background-color': '#991b1b'
-      }
+    const redStyle: StyleSpecification = {
+      version: 8,
+      name: 'Simple Red',
+      sources: {},
+      layers: [
+        {
+          id: 'background',
+          type: 'background',
+          paint: {
+            'background-color': '#991b1b'
+          }
+        }
+      ]
     }
-  ]
-}
 
-const availableStyles = [
-  blueStyle,
-  redStyle,
-  'https://demotiles.maplibre.org/style.json'
-]
+    const availableStyles = [
+      blueStyle,
+      redStyle,
+      'https://demotiles.maplibre.org/style.json'
+    ]
 
-const selectedStyleIndexA = ref(0)
-const selectedStyleIndexB = ref(1)
+    const selectedStyleIndexA = ref(0)
+    const selectedStyleIndexB = ref(1)
 
-// Layer control - these would be populated dynamically in a real app
-const selectedLayersA = ref<string[]>([])
-const selectedLayersB = ref<string[]>([])
+    // Layer control - these would be populated dynamically in a real app
+    const selectedLayersA = ref<string[]>([])
+    const selectedLayersB = ref<string[]>([])
 
-// Force component re-render when styles change
-const comparisonKey = computed(() => 
-  `${selectedStyleIndexA.value}-${selectedStyleIndexB.value}`
-)
+    // Force component re-render when styles change
+    const comparisonKey = computed(() => 
+      `${selectedStyleIndexA.value}-${selectedStyleIndexB.value}`
+    )
+
+    return {
+      availableStyles,
+      selectedStyleIndexA,
+      selectedStyleIndexB,
+      selectedLayersA,
+      selectedLayersB,
+      comparisonKey
+    }
+  }
+})
 </script>
 
 <style>

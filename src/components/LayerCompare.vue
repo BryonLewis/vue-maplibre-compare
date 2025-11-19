@@ -1,5 +1,5 @@
 <template>
-  <div class="map-compare-container" ref="containerRef">
+  <div class="layer-compare-container" ref="containerRef">
     <div class="map-compare-wrapper">
       <div ref="mapARef" class="map map-a"></div>
       <div ref="mapBRef" class="map map-b"></div>
@@ -23,9 +23,8 @@ import { defineComponent, ref, onMounted, onBeforeUnmount, watch, computed, Prop
 import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
-export interface MapCompareProps {
-  mapStyleA: string | StyleSpecification
-  mapStyleB: string | StyleSpecification
+export interface LayerCompareProps {
+  mapStyle: string | StyleSpecification
   mapLayersA?: string[]
   mapLayersB?: string[]
   center?: [number, number]
@@ -35,13 +34,9 @@ export interface MapCompareProps {
 }
 
 export default defineComponent({
-  name: 'MapCompare',
+  name: 'LayerCompare',
   props: {
-    mapStyleA: {
-      type: [String, Object] as PropType<string | StyleSpecification>,
-      required: true
-    },
-    mapStyleB: {
+    mapStyle: {
       type: [String, Object] as PropType<string | StyleSpecification>,
       required: true
     },
@@ -89,20 +84,20 @@ export default defineComponent({
     const initializeMaps = () => {
       if (!mapARef.value || !mapBRef.value || !mapBClipRef.value) return
 
-      // Initialize Map A
+      // Initialize Map A with the same style
       mapA = new maplibregl.Map({
         container: mapARef.value,
-        style: props.mapStyleA,
+        style: props.mapStyle,
         center: props.center,
         zoom: props.zoom,
         bearing: props.bearing,
         pitch: props.pitch
       })
 
-      // Initialize Map B (clipped version)
+      // Initialize Map B with the same style (clipped version)
       mapB = new maplibregl.Map({
         container: mapBClipRef.value,
-        style: props.mapStyleB,
+        style: props.mapStyle,
         center: props.center,
         zoom: props.zoom,
         bearing: props.bearing,
@@ -232,7 +227,7 @@ export default defineComponent({
 </script>
 
 <style scoped>
-.map-compare-container {
+.layer-compare-container {
   position: relative;
   width: 100%;
   height: 100%;
