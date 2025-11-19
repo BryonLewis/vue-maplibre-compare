@@ -5,6 +5,11 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   root: './',
+  base: process.env.BASE_URL || '/',
+  build: {
+    outDir: 'demo-dist',
+    emptyOutDir: true,
+  },
   server: {
     port: 3000
   }
