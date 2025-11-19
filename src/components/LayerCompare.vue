@@ -66,7 +66,7 @@ export default defineComponent({
       }),
     },
   },
-  setup(props) {
+  setup() {
     return {
     };
   },
@@ -75,11 +75,11 @@ export default defineComponent({
 
 <template>
   <MapCompare
-    :mapStyleA="mapStyle"
-    :mapStyleB="mapStyle"
-    :swiperOptions="swiperOptions"
-    :mapLayersA="mapLayersA"
-    :mapLayersB="mapLayersB"
+    :map-style-a="mapStyle"
+    :map-style-b="mapStyle"
+    :swiper-options="swiperOptions"
+    :map-layers-a="mapLayersA"
+    :map-layers-b="mapLayersB"
     :center="center"
     :zoom="zoom"
     :bearing="bearing"
@@ -87,6 +87,4 @@ export default defineComponent({
   />
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

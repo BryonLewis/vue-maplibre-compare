@@ -115,7 +115,7 @@ export function useMapCompare(
   const onMove = (e: any) => {
     // Prevent default to avoid text selection
     e.preventDefault();
-    
+
     if (opts.mousemove) {
       controlContainer.value!.style.pointerEvents = e.touches ? 'auto' : 'none';
       swiper.value!.style.pointerEvents = e.touches ? 'auto' : 'none';
@@ -153,13 +153,13 @@ export function useMapCompare(
   const onDown = (e: any) => {
     // Prevent default behavior to avoid text selection
     e.preventDefault();
-    
+
     // Prevent text selection during drag
     document.body.style.userSelect = 'none';
     document.body.style.webkitUserSelect = 'none';
     document.body.style.mozUserSelect = 'none';
     document.body.style.msUserSelect = 'none';
-    
+
     if (e.touches) {
       document.addEventListener('touchmove', onMove, { passive: false });
       document.addEventListener('touchend', onTouchEnd);

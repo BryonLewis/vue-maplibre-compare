@@ -4,11 +4,11 @@ import {
 } from 'vue';
 import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { Protocol } from 'pmtiles';
 import { useMapCompare } from '../use/useMapCompare';
-import { Protocol } from "pmtiles";
 
 const protocol = new Protocol();
-maplibregl.addProtocol("pmtiles", protocol.tile);
+maplibregl.addProtocol('pmtiles', protocol.tile);
 
 export interface SwiperOptions {
   thickness?: number
@@ -229,15 +229,19 @@ export default defineComponent({
 </script>
 
 <template>
-  <div ref="containerRef" class="map-compare-container" :style="{
-    '--swiper-thickness': `${swiperOpts.thickness}px`,
-    '--swiper-grab-thickness': `${Math.max(swiperOpts.grabThickness, swiperOpts.thickness)}px`,
-    '--swiper-handle-size': `${swiperOpts.handleSize}px`,
-    '--swiper-line-color': swiperOpts.lineColor,
-    '--swiper-handle-color': swiperOpts.handleColor,
-    '--swiper-handle-shadow-color': swiperOpts.handleShadowColor,
-    '--swiper-arrow-color': swiperOpts.arrowColor,
-  }">
+  <div
+    ref="containerRef"
+    class="map-compare-container"
+    :style="{
+      '--swiper-thickness': `${swiperOpts.thickness}px`,
+      '--swiper-grab-thickness': `${Math.max(swiperOpts.grabThickness, swiperOpts.thickness)}px`,
+      '--swiper-handle-size': `${swiperOpts.handleSize}px`,
+      '--swiper-line-color': swiperOpts.lineColor,
+      '--swiper-handle-color': swiperOpts.handleColor,
+      '--swiper-handle-shadow-color': swiperOpts.handleShadowColor,
+      '--swiper-arrow-color': swiperOpts.arrowColor,
+    }"
+  >
     <div ref="mapARef" class="map map-a" />
     <div ref="mapBRef" class="map map-b" />
 
@@ -315,8 +319,6 @@ export default defineComponent({
       var(--swiper-line-color, white) calc(50% + var(--swiper-thickness, 4px) / 2),
       transparent calc(50% + var(--swiper-thickness, 4px) / 2));
   cursor: ew-resize;
-  /* box-shadow is tricky with transparent background, moving to pseudo-element or relying on the white line */
-  /* box-shadow: 0 0 8px rgba(0, 0, 0, 0.5); */
   pointer-events: auto;
   user-select: none;
   -webkit-user-select: none;
@@ -338,6 +340,7 @@ export default defineComponent({
   box-shadow: 0 2px 8px var(--swiper-handle-shadow-color, rgba(0, 0, 0, 0.3));
   pointer-events: none;
 }
+
 /* Back-to-back arrows for vertical swiper (left/right) */
 .compare-swiper-vertical::after {
   content: '⬄';
