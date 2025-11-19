@@ -14,13 +14,9 @@ A Vue 3 component for comparing MapLibre maps side-by-side with a draggable slid
 
 ## Demo
 
-![Map comparison with slider at center](https://github.com/user-attachments/assets/142a485c-79de-4751-b49f-5f8d4f3c974e)
+![Map comparison with customizable swiper](docs/images/demo.png)
 
-*Comparing two different map styles side-by-side*
-
-![Map comparison with slider moved](https://github.com/user-attachments/assets/6bd119c5-7c6f-4d54-ab86-eed08a97c534)
-
-*Drag the slider to reveal more of one map*
+*Comparing two different map styles side-by-side with customizable swiper options*
 
 ## Installation
 
@@ -166,6 +162,27 @@ Compare two different map styles side-by-side.
 | `zoom` | `number` | No | `1` | Initial zoom level |
 | `bearing` | `number` | No | `0` | Initial bearing (rotation) in degrees |
 | `pitch` | `number` | No | `0` | Initial pitch (tilt) in degrees |
+| `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
+
+### SwiperOptions Interface
+
+```typescript
+interface SwiperOptions {
+  thickness?: number;          // Width of the visible line (default: 4)
+  orientation: 'vertical' | 'horizontal'; // Orientation of the slider
+  grabThickness?: number;      // Width of the interactive area (default: 20)
+  handleSize?: number;         // Diameter of the handle circle (default: 40)
+  lineColor?: string;          // Color of the divider line (default: 'white')
+  handleColor?: string;        // Color of the handle circle (default: 'white')
+  handleShadowColor?: string;  // Color of the handle shadow
+  arrowColor?: string;         // Color of the arrows
+}
+```
+
+### PMTiles Support
+
+The component now includes built-in support for the `pmtiles` protocol. You can use `pmtiles://` URLs directly in your style sources.
+
 
 ### LayerCompare
 
@@ -182,6 +199,7 @@ Compare the same map style with different layer visibility on each side.
 | `zoom` | `number` | No | `1` | Initial zoom level |
 | `bearing` | `number` | No | `0` | Initial bearing (rotation) in degrees |
 | `pitch` | `number` | No | `0` | Initial pitch (tilt) in degrees |
+| `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
 
 ## Development
 
@@ -209,11 +227,4 @@ npm run build
 
 This will create the distributable library files in the `dist` directory.
 
-## License
-
-MIT
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
 
