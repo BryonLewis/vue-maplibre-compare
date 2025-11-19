@@ -58,6 +58,7 @@
   },
   "dependencies": {
     "@mapbox/mapbox-gl-sync-move": "^0.3.1",
-    "maplibre-gl": "^4.0.0 || ^5.0.0"
+    "maplibre-gl": "^4.0.0 || ^5.0.0",
+    "pmtiles": "^4.3.0"
   }
 }

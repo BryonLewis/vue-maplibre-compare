@@ -9,6 +9,7 @@ export default defineComponent({
     MapCompare
   },
   setup() {
+
     // Simple inline styles for testing without external tile servers
     const openStreetMapStyle: StyleSpecification = {
       version: 8,
@@ -123,8 +124,10 @@ export default defineComponent({
         :mapStyleB="availableStyles[selectedStyleIndexB]"
         :mapLayersA="selectedLayersA"
         :mapLayersB="selectedLayersB"
-        :center="[-86.1794, 34.8019]"
-        :zoom="6"
+        :center="[-74.1847, 43.1339]"
+        :zoom="9"
+        :bearing="0"
+        :pitch="0"
       />
     </div>
   </div>
