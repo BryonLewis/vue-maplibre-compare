@@ -1,48 +1,3 @@
-<template>
-  <div id="app">
-    <div class="header">
-      <h1>Vue MapLibre Compare Demo</h1>
-      <p>Drag the slider to compare two different map styles</p>
-    </div>
-    
-    <div class="controls">
-      <div class="control-group">
-        <h3>Map A Style</h3>
-        <select v-model="selectedStyleIndexA">
-          <option :value="0">Simple Blue Style</option>
-          <option :value="1">Simple Red Style</option>
-          <option :value="2">MapLibre Demo Tiles (requires internet)</option>
-        </select>
-      </div>
-      
-      <div class="control-group">
-        <h3>Map B Style</h3>
-        <select v-model="selectedStyleIndexB">
-          <option :value="0">Simple Blue Style</option>
-          <option :value="1">Simple Red Style</option>
-          <option :value="2">MapLibre Demo Tiles (requires internet)</option>
-        </select>
-      </div>
-    </div>
-    
-    <div class="info">
-      <p><strong>Instructions:</strong> Click and drag the white slider to compare the two maps. Use your mouse or touch to pan, zoom, and rotate both maps simultaneously.</p>
-    </div>
-    
-    <div class="map-container">
-      <MapCompare
-        :key="comparisonKey"
-        :mapStyleA="availableStyles[selectedStyleIndexA]"
-        :mapStyleB="availableStyles[selectedStyleIndexB]"
-        :mapLayersA="selectedLayersA"
-        :mapLayersB="selectedLayersB"
-        :center="[0, 0]"
-        :zoom="2"
-      />
-    </div>
-  </div>
-</template>
-
 <script lang="ts">
 import { defineComponent, ref, computed } from 'vue'
 import { MapCompare } from '../../src/index'
@@ -55,40 +10,57 @@ export default defineComponent({
   },
   setup() {
     // Simple inline styles for testing without external tile servers
-    const blueStyle: StyleSpecification = {
+    const openStreetMapStyle: StyleSpecification = {
       version: 8,
-      name: 'Simple Blue',
-      sources: {},
+      name: 'Open Street Map',
+      sources: {
+        osm: {
+          type: 'raster',
+          tiles: [
+            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          ],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors',
+        },
+      },
       layers: [
         {
-          id: 'background',
-          type: 'background',
-          paint: {
-            'background-color': '#1e3a8a'
-          }
-        }
+          id: 'osm-tiles',
+          type: 'raster',
+          source: 'osm',
+          minzoom: 0,
+          maxzoom: 19,
+        },
       ]
     }
 
-    const redStyle: StyleSpecification = {
+    const naipStyle: StyleSpecification = {
       version: 8,
-      name: 'Simple Red',
-      sources: {},
+      name: 'NAIP Imagery',
+      sources: {
+        'naip-imagery': {
+          type: 'raster',
+          tiles: [
+            // eslint-disable-next-line vue/max-len
+            'https://gis.apfo.usda.gov/arcgis/rest/services/NAIP/USDA_CONUS_PRIME/ImageServer/tile/{z}/{y}/{x}?blankTile=false',
+          ],
+          tileSize: 256,
+        },
+      },
       layers: [
         {
-          id: 'background',
-          type: 'background',
-          paint: {
-            'background-color': '#991b1b'
-          }
-        }
+          id: 'naip-imagery-tiles',
+          type: 'raster',
+          source: 'naip-imagery',
+        },
       ]
     }
 
     const availableStyles = [
-      blueStyle,
-      redStyle,
-      'https://demotiles.maplibre.org/style.json'
+      openStreetMapStyle,
+      naipStyle
     ]
 
     const selectedStyleIndexA = ref(0)
@@ -114,6 +86,49 @@ export default defineComponent({
   }
 })
 </script>
+
+<template>
+  <div id="app">
+    <div class="header">
+      <h1>Vue MapLibre Compare Demo</h1>
+      <p>Drag the slider to compare two different map styles</p>
+    </div>
+    
+    <div class="controls">
+      <div class="control-group">
+        <h3>Map A Style</h3>
+        <select v-model="selectedStyleIndexA">
+          <option :value="0">OpenStreetMap Style</option>
+          <option :value="1">NAIP Imagery</option>
+        </select>
+      </div>
+      
+      <div class="control-group">
+        <h3>Map B Style</h3>
+        <select v-model="selectedStyleIndexB">
+          <option :value="0">OpenStreetMap Style</option>
+          <option :value="1">NAIP Imagery</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="info">
+      <p><strong>Instructions:</strong> Click and drag the white slider to compare the two maps. Use your mouse or touch to pan, zoom, and rotate both maps simultaneously.</p>
+    </div>
+    
+    <div class="map-container">
+      <MapCompare
+        :key="comparisonKey"
+        :mapStyleA="availableStyles[selectedStyleIndexA]"
+        :mapStyleB="availableStyles[selectedStyleIndexB]"
+        :mapLayersA="selectedLayersA"
+        :mapLayersB="selectedLayersB"
+        :center="[-86.1794, 34.8019]"
+        :zoom="6"
+      />
+    </div>
+  </div>
+</template>
 
 <style>
 * {

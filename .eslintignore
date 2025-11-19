@@ -1,0 +1,9 @@
+node_modules
+dist
+*.d.ts
+*.d.ts.map
+vite.config.ts
+vite.config.*.ts
+tsconfig.*.json
+demo
+

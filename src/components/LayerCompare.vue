@@ -1,27 +1,10 @@
-<template>
-  <div class="layer-compare-container" ref="containerRef">
-    <div class="map-compare-wrapper">
-      <div ref="mapARef" class="map map-a"></div>
-      <div ref="mapBRef" class="map map-b"></div>
-      <div 
-        class="map-compare-slider" 
-        :style="{ left: sliderPosition + '%' }"
-        @mousedown="startDrag"
-        @touchstart.passive="startDrag"
-      >
-        <div class="slider-handle"></div>
-      </div>
-      <div class="clip-container" :style="{ clip: clipPath }">
-        <div ref="mapBClipRef" class="map map-b-clip"></div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script lang="ts">
-import { defineComponent, ref, onMounted, onBeforeUnmount, watch, computed, PropType } from 'vue'
-import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl'
-import 'maplibre-gl/dist/maplibre-gl.css'
+import {
+  defineComponent, ref, onMounted, onBeforeUnmount, watch, PropType,
+} from 'vue';
+import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import { useMapCompare } from '../use/useMapCompare';
 
 export interface LayerCompareProps {
   mapStyle: string | StyleSpecification
@@ -38,51 +21,64 @@ export default defineComponent({
   props: {
     mapStyle: {
       type: [String, Object] as PropType<string | StyleSpecification>,
-      required: true
+      required: true,
     },
     mapLayersA: {
       type: Array as PropType<string[]>,
-      default: () => []
+      default: () => [],
     },
     mapLayersB: {
       type: Array as PropType<string[]>,
-      default: () => []
+      default: () => [],
     },
     center: {
       type: Array as unknown as PropType<[number, number]>,
-      default: () => [0, 0]
+      default: () => [0, 0],
     },
     zoom: {
       type: Number,
-      default: 1
+      default: 1,
     },
     bearing: {
       type: Number,
-      default: 0
+      default: 0,
     },
     pitch: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   setup(props) {
-    const containerRef = ref<HTMLElement>()
-    const mapARef = ref<HTMLElement>()
-    const mapBRef = ref<HTMLElement>()
-    const mapBClipRef = ref<HTMLElement>()
+    const containerRef = ref<HTMLElement>();
+    const mapARef = ref<HTMLElement>();
+    const mapBRef = ref<HTMLElement>();
 
-    let mapA: MaplibreMap | null = null
-    let mapB: MaplibreMap | null = null
-    let isDragging = false
+    let mapA: MaplibreMap | null = null;
+    let mapB: MaplibreMap | null = null;
 
-    const sliderPosition = ref(50)
+    const updateLayerVisibility = (mapType: 'A' | 'B') => {
+      const map = mapType === 'A' ? mapA : mapB;
+      const enabledLayers = mapType === 'A' ? props.mapLayersA : props.mapLayersB;
 
-    const clipPath = computed(() => {
-      return `rect(0, 999em, 999em, ${sliderPosition.value}%)`
-    })
+      if (!map || !map.isStyleLoaded()) return;
 
-    const initializeMaps = () => {
-      if (!mapARef.value || !mapBRef.value || !mapBClipRef.value) return
+      const style = map.getStyle();
+      if (!style || !style.layers) return;
+
+      // Disable all layers first if specific layers are provided
+      if (enabledLayers && enabledLayers.length > 0) {
+        style.layers.forEach((layer) => {
+          if (enabledLayers.includes(layer.id)) {
+            map.setLayoutProperty(layer.id, 'visibility', 'visible');
+          } else {
+            map.setLayoutProperty(layer.id, 'visibility', 'none');
+          }
+        });
+      }
+    };
+
+    const initializeMaps = async () => {
+      if (!mapARef.value || !mapBRef.value || !containerRef.value) return;
 
       // Initialize Map A with the same style
       mapA = new maplibregl.Map({
@@ -91,140 +87,89 @@ export default defineComponent({
         center: props.center,
         zoom: props.zoom,
         bearing: props.bearing,
-        pitch: props.pitch
-      })
+        pitch: props.pitch,
+      });
 
-      // Initialize Map B with the same style (clipped version)
+      // Initialize Map B with the same style
       mapB = new maplibregl.Map({
-        container: mapBClipRef.value,
+        container: mapBRef.value,
         style: props.mapStyle,
         center: props.center,
         zoom: props.zoom,
         bearing: props.bearing,
-        pitch: props.pitch
-      })
+        pitch: props.pitch,
+      });
 
-      // Sync map movements
-      const syncMaps = (source: MaplibreMap, target: MaplibreMap) => {
-        target.jumpTo({
-          center: source.getCenter(),
-          zoom: source.getZoom(),
-          bearing: source.getBearing(),
-          pitch: source.getPitch()
-        })
+      // Initialize map compare - maps exist now, composable's onMounted will run after component's
+      if (mapA && mapB && containerRef.value) {
+        useMapCompare(mapA, mapB, containerRef.value, {
+          orientation: 'vertical',
+          mousemove: false,
+        });
       }
 
-      mapA.on('move', () => {
-        if (mapB) syncMaps(mapA!, mapB)
-      })
-
-      mapB.on('move', () => {
-        if (mapA) syncMaps(mapB!, mapA)
-      })
-
-      // Apply layer visibility after maps are loaded
-      mapA.on('load', () => {
-        updateLayerVisibility('A')
-      })
-
-      mapB.on('load', () => {
-        updateLayerVisibility('B')
-      })
-    }
-
-    const updateLayerVisibility = (mapType: 'A' | 'B') => {
-      const map = mapType === 'A' ? mapA : mapB
-      const enabledLayers = mapType === 'A' ? props.mapLayersA : props.mapLayersB
-      
-      if (!map || !map.isStyleLoaded()) return
-
-      const style = map.getStyle()
-      if (!style || !style.layers) return
-
-      // Disable all layers first if specific layers are provided
-      if (enabledLayers && enabledLayers.length > 0) {
-        style.layers.forEach(layer => {
-          if (enabledLayers.includes(layer.id)) {
-            map.setLayoutProperty(layer.id, 'visibility', 'visible')
+      // Wait for maps to be ready for layer visibility updates
+      await Promise.all([
+        new Promise<void>((resolve) => {
+          if (mapA!.loaded()) {
+            resolve();
           } else {
-            map.setLayoutProperty(layer.id, 'visibility', 'none')
+            mapA!.on('load', () => resolve());
           }
-        })
-      }
-    }
+        }),
+        new Promise<void>((resolve) => {
+          if (mapB!.loaded()) {
+            resolve();
+          } else {
+            mapB!.on('load', () => resolve());
+          }
+        }),
+      ]);
 
-    const startDrag = (e: MouseEvent | TouchEvent) => {
-      e.preventDefault()
-      isDragging = true
-      
-      document.addEventListener('mousemove', onDrag)
-      document.addEventListener('mouseup', stopDrag)
-      document.addEventListener('touchmove', onDrag)
-      document.addEventListener('touchend', stopDrag)
-    }
-
-    const onDrag = (e: MouseEvent | TouchEvent) => {
-      if (!isDragging || !containerRef.value) return
-      
-      const containerRect = containerRef.value.getBoundingClientRect()
-      let clientX: number
-      
-      if (e instanceof MouseEvent) {
-        clientX = e.clientX
-      } else {
-        clientX = e.touches[0].clientX
-      }
-      
-      const x = clientX - containerRect.left
-      const percentage = Math.max(0, Math.min(100, (x / containerRect.width) * 100))
-      sliderPosition.value = percentage
-    }
-
-    const stopDrag = () => {
-      isDragging = false
-      document.removeEventListener('mousemove', onDrag)
-      document.removeEventListener('mouseup', stopDrag)
-      document.removeEventListener('touchmove', onDrag)
-      document.removeEventListener('touchend', stopDrag)
-    }
+      // Apply initial layer visibility
+      updateLayerVisibility('A');
+      updateLayerVisibility('B');
+    };
 
     // Watch for layer changes
     watch(() => props.mapLayersA, () => {
-      updateLayerVisibility('A')
-    }, { deep: true })
+      updateLayerVisibility('A');
+    }, { deep: true });
 
     watch(() => props.mapLayersB, () => {
-      updateLayerVisibility('B')
-    }, { deep: true })
+      updateLayerVisibility('B');
+    }, { deep: true });
 
     onMounted(() => {
-      initializeMaps()
-    })
+      initializeMaps();
+    });
 
     onBeforeUnmount(() => {
       if (mapA) {
-        mapA.remove()
-        mapA = null
+        mapA.remove();
+        mapA = null;
       }
       if (mapB) {
-        mapB.remove()
-        mapB = null
+        mapB.remove();
+        mapB = null;
       }
-      stopDrag()
-    })
+    });
 
     return {
       containerRef,
       mapARef,
       mapBRef,
-      mapBClipRef,
-      sliderPosition,
-      clipPath,
-      startDrag
-    }
-  }
-})
+    };
+  },
+});
 </script>
+
+<template>
+  <div ref="containerRef" class="layer-compare-container">
+    <div ref="mapARef" class="map map-a" />
+    <div ref="mapBRef" class="map map-b" />
+  </div>
+</template>
 
 <style scoped>
 .layer-compare-container {
@@ -232,12 +177,6 @@ export default defineComponent({
   width: 100%;
   height: 100%;
   overflow: hidden;
-}
-
-.map-compare-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
 }
 
 .map {
@@ -254,40 +193,35 @@ export default defineComponent({
 
 .map-b {
   z-index: 0;
-  visibility: hidden;
 }
+</style>
 
-.clip-container {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 2;
-  overflow: hidden;
-}
-
-.map-b-clip {
+<style>
+/* Global styles for useMapCompare slider */
+.maplibre-compare {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.map-compare-slider {
+.compare-swiper-vertical {
   position: absolute;
   top: 0;
   bottom: 0;
-  z-index: 3;
   width: 4px;
   margin-left: -2px;
   background: white;
   cursor: ew-resize;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
 }
 
-.slider-handle {
+.compare-swiper-vertical::before {
+  content: '';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -298,29 +232,33 @@ export default defineComponent({
   background: white;
   border-radius: 50%;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  pointer-events: none;
 }
 
-.slider-handle::before,
-.slider-handle::after {
+.compare-swiper-vertical::after {
   content: '';
   position: absolute;
+  top: 50%;
+  left: 50%;
   width: 0;
   height: 0;
+  margin-left: -4px;
+  margin-top: -6px;
   border-style: solid;
-}
-
-.slider-handle::before {
-  left: 8px;
   border-width: 6px 8px 6px 0;
   border-color: transparent #666 transparent transparent;
+  pointer-events: none;
 }
 
-.slider-handle::after {
-  right: 8px;
-  border-width: 6px 0 6px 8px;
-  border-color: transparent transparent transparent #666;
+.compare-swiper-horizontal {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  margin-top: -2px;
+  background: white;
+  cursor: ns-resize;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
 }
 </style>
