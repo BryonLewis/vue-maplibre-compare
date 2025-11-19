@@ -4,15 +4,18 @@ A Vue 3 component for comparing MapLibre maps side-by-side with a draggable slid
 
 ## Features
 
-- 🗺️ Side-by-side map comparison with smooth dragging slider
-- 🎨 Support for different MapLibre styles on each side
-- 🔧 Layer visibility control for both maps
-- 📱 Touch and mouse support
-- ⚡ Built with Vue 3 and TypeScript using `defineComponent`
-- 🔄 Synchronized map movements (pan, zoom, rotate, pitch)
-- 🎯 Two components: `MapCompare` (different styles) and `LayerCompare` (same style, different layers)
+- Side-by-side map comparison with smooth dragging slider
+- Support for different MapLibre styles on each side
+- Layer visibility control for both maps
+- Touch and mouse support
+- Built with Vue 3 and TypeScript using `defineComponent`
+- Synchronized map movements (pan, zoom, rotate, pitch)
+- Two components: `MapCompare` (different styles) and `LayerCompare` (same style, different layers)
 
 ## Demo
+
+**[Live Demo](https://bryonlewis.github.io/vue-maplibre-compare/)** - Try it out in your browser!
+
 
 ![Map comparison with customizable swiper](docs/images/demo.png)
 

@@ -1,88 +1,65 @@
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue'
-import { MapCompare } from '../../src/index'
-import type { StyleSpecification } from 'maplibre-gl'
+import { defineComponent, ref } from 'vue'
+import DemoMapCompare from './DemoMapCompare.vue'
+import DemoLayerCompare from './DemoLayerCompare.vue'
+import type { SwiperOptions } from '../../src/components/MapCompare.vue'
+
+type DemoMode = 'map-compare' | 'layer-compare'
 
 export default defineComponent({
   name: 'App',
   components: {
-    MapCompare
+    DemoMapCompare,
+    DemoLayerCompare
   },
   setup() {
+    const demoMode = ref<DemoMode>('map-compare')
+    const showSwiperSettings = ref(false)
 
-    // Simple inline styles for testing without external tile servers
-    const openStreetMapStyle: StyleSpecification = {
-      version: 8,
-      name: 'Open Street Map',
-      sources: {
-        osm: {
-          type: 'raster',
-          tiles: [
-            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          ],
-          tileSize: 256,
-          attribution: '© OpenStreetMap contributors',
-        },
-      },
-      layers: [
-        {
-          id: 'osm-tiles',
-          type: 'raster',
-          source: 'osm',
-          minzoom: 0,
-          maxzoom: 19,
-        },
-      ]
+    // Swiper options with defaults
+    const swiperOptions = ref<SwiperOptions>({
+      thickness: 4,
+      orientation: 'vertical',
+      grabThickness: 20,
+      handleSize: 40,
+      lineColor: '#ffffff',
+      handleColor: '#ffffff',
+      handleShadowColor: 'rgba(0, 0, 0, 0.3)',
+      arrowColor: '#666666',
+    })
+
+    // Helper function to extract hex color from CSS color string
+    const getHexColor = (color: string | undefined): string => {
+      if (!color) return '#000000'
+      // If it's already a hex color, return it
+      if (color.startsWith('#')) return color
+      // If it's rgba/rgb, try to convert (simplified - just return a default)
+      // For rgba, we'll just return black as color picker doesn't support alpha
+      if (color.startsWith('rgba') || color.startsWith('rgb')) {
+        // Extract RGB values (simplified parsing)
+        const match = color.match(/\d+/g)
+        if (match && match.length >= 3) {
+          const r = parseInt(match[0]).toString(16).padStart(2, '0')
+          const g = parseInt(match[1]).toString(16).padStart(2, '0')
+          const b = parseInt(match[2]).toString(16).padStart(2, '0')
+          return `#${r}${g}${b}`
+        }
+      }
+      return '#000000'
     }
 
-    const naipStyle: StyleSpecification = {
-      version: 8,
-      name: 'NAIP Imagery',
-      sources: {
-        'naip-imagery': {
-          type: 'raster',
-          tiles: [
-            // eslint-disable-next-line vue/max-len
-            'https://gis.apfo.usda.gov/arcgis/rest/services/NAIP/USDA_CONUS_PRIME/ImageServer/tile/{z}/{y}/{x}?blankTile=false',
-          ],
-          tileSize: 256,
-        },
-      },
-      layers: [
-        {
-          id: 'naip-imagery-tiles',
-          type: 'raster',
-          source: 'naip-imagery',
-        },
-      ]
+    const updateColorFromPicker = (property: keyof SwiperOptions, value: string) => {
+      if (swiperOptions.value) {
+        swiperOptions.value[property] = value as any
+      }
     }
-
-    const availableStyles = [
-      openStreetMapStyle,
-      naipStyle
-    ]
-
-    const selectedStyleIndexA = ref(0)
-    const selectedStyleIndexB = ref(1)
-
-    // Layer control - these would be populated dynamically in a real app
-    const selectedLayersA = ref<string[]>([])
-    const selectedLayersB = ref<string[]>([])
-
-    // Force component re-render when styles change
-    const comparisonKey = computed(() => 
-      `${selectedStyleIndexA.value}-${selectedStyleIndexB.value}`
-    )
 
     return {
-      availableStyles,
-      selectedStyleIndexA,
-      selectedStyleIndexB,
-      selectedLayersA,
-      selectedLayersB,
-      comparisonKey
+      demoMode,
+      swiperOptions,
+      showSwiperSettings,
+      getHexColor,
+      updateColorFromPicker,
     }
   }
 })
@@ -90,45 +67,119 @@ export default defineComponent({
 
 <template>
   <div id="app">
-    <div class="header">
-      <h1>Vue MapLibre Compare Demo</h1>
-      <p>Drag the slider to compare two different map styles</p>
-    </div>
-    
-    <div class="controls">
-      <div class="control-group">
-        <h3>Map A Style</h3>
-        <select v-model="selectedStyleIndexA">
-          <option :value="0">OpenStreetMap Style</option>
-          <option :value="1">NAIP Imagery</option>
-        </select>
+    <div class="demo-selector">
+      <div class="selector-buttons">
+        <button
+          class="selector-button"
+          :class="{ active: demoMode === 'map-compare' }"
+          @click="demoMode = 'map-compare'"
+        >
+          Map Compare
+        </button>
+        <button
+          class="selector-button"
+          :class="{ active: demoMode === 'layer-compare' }"
+          @click="demoMode = 'layer-compare'"
+        >
+          Layer Compare
+        </button>
       </div>
-      
-      <div class="control-group">
-        <h3>Map B Style</h3>
-        <select v-model="selectedStyleIndexB">
-          <option :value="0">OpenStreetMap Style</option>
-          <option :value="1">NAIP Imagery</option>
-        </select>
+      <button class="settings-button" @click="showSwiperSettings = true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"></circle>
+          <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
+        </svg>
+        Swiper Settings
+      </button>
+    </div>
+
+    <div class="demo-content">
+      <DemoMapCompare v-if="demoMode === 'map-compare'" :swiperOptions="swiperOptions" />
+      <DemoLayerCompare v-else-if="demoMode === 'layer-compare'" :swiperOptions="swiperOptions" />
+    </div>
+
+    <!-- Swiper Settings Modal -->
+    <div v-if="showSwiperSettings" class="modal-overlay" @click.self="showSwiperSettings = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Swiper Settings</h2>
+          <button class="close-button" @click="showSwiperSettings = false">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Orientation</label>
+            <select v-model="swiperOptions.orientation">
+              <option value="vertical">Vertical</option>
+              <option value="horizontal">Horizontal</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Thickness (px)</label>
+            <input type="number" v-model.number="swiperOptions.thickness" min="1" max="20" />
+          </div>
+
+          <div class="form-group">
+            <label>Grab Thickness (px)</label>
+            <input type="number" v-model.number="swiperOptions.grabThickness" min="1" max="50" />
+          </div>
+
+          <div class="form-group">
+            <label>Handle Size (px)</label>
+            <input type="number" v-model.number="swiperOptions.handleSize" min="10" max="100" />
+          </div>
+
+          <div class="form-group">
+            <label>Line Color</label>
+            <div class="color-input-group">
+              <input type="text" v-model="swiperOptions.lineColor" placeholder="#ffffff" />
+              <input type="color" :value="getHexColor(swiperOptions.lineColor)" @input="updateColorFromPicker('lineColor', ($event.target as HTMLInputElement).value)" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Handle Color</label>
+            <div class="color-input-group">
+              <input type="text" v-model="swiperOptions.handleColor" placeholder="#ffffff" />
+              <input type="color" :value="getHexColor(swiperOptions.handleColor)" @input="updateColorFromPicker('handleColor', ($event.target as HTMLInputElement).value)" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Handle Shadow Color</label>
+            <div class="color-input-group">
+              <input type="text" v-model="swiperOptions.handleShadowColor" placeholder="rgba(0, 0, 0, 0.3)" />
+              <input type="color" :value="getHexColor(swiperOptions.handleShadowColor)" @input="updateColorFromPicker('handleShadowColor', ($event.target as HTMLInputElement).value)" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Arrow Color</label>
+            <div class="color-input-group">
+              <input type="text" v-model="swiperOptions.arrowColor" placeholder="#666666" />
+              <input type="color" :value="getHexColor(swiperOptions.arrowColor)" @input="updateColorFromPicker('arrowColor', ($event.target as HTMLInputElement).value)" />
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="reset-button" @click="swiperOptions = {
+            thickness: 4,
+            orientation: 'vertical',
+            grabThickness: 20,
+            handleSize: 40,
+            lineColor: '#ffffff',
+            handleColor: '#ffffff',
+            handleShadowColor: 'rgba(0, 0, 0, 0.3)',
+            arrowColor: '#666666',
+          }">Reset to Defaults</button>
+          <button class="close-button-primary" @click="showSwiperSettings = false">Close</button>
+        </div>
       </div>
-    </div>
-    
-    <div class="info">
-      <p><strong>Instructions:</strong> Click and drag the white slider to compare the two maps. Use your mouse or touch to pan, zoom, and rotate both maps simultaneously.</p>
-    </div>
-    
-    <div class="map-container">
-      <MapCompare
-        :key="comparisonKey"
-        :mapStyleA="availableStyles[selectedStyleIndexA]"
-        :mapStyleB="availableStyles[selectedStyleIndexB]"
-        :mapLayersA="selectedLayersA"
-        :mapLayersB="selectedLayersB"
-        :center="[-74.1847, 43.1339]"
-        :zoom="9"
-        :bearing="0"
-        :pitch="0"
-      />
     </div>
   </div>
 </template>
@@ -140,7 +191,9 @@ export default defineComponent({
   box-sizing: border-box;
 }
 
-html, body, #app {
+html,
+body,
+#app {
   width: 100%;
   height: 100%;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -168,55 +221,221 @@ html, body, #app {
   font-size: 14px;
 }
 
-.controls {
+.demo-selector {
   display: flex;
-  gap: 20px;
-  padding: 15px 20px;
-  background: #ecf0f1;
-  border-bottom: 1px solid #bdc3c7;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  background: #34495e;
+  border-bottom: 2px solid #2c3e50;
 }
 
-.control-group {
+.selector-buttons {
+  display: flex;
   flex: 1;
 }
 
-.control-group h3 {
-  margin-bottom: 8px;
-  color: #2c3e50;
+.selector-button {
+  flex: 1;
+  padding: 12px 24px;
+  background: #34495e;
+  color: #ecf0f1;
+  border: none;
+  border-right: 1px solid #2c3e50;
   font-size: 14px;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.control-group select {
+.selector-button:last-child {
+  border-right: none;
+}
+
+.selector-button:hover {
+  background: #3d566e;
+  color: white;
+}
+
+.selector-button.active {
+  background: #3498db;
+  color: white;
+}
+
+.selector-button.active:hover {
+  background: #2980b9;
+}
+
+.settings-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 20px;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-left: 1px solid #2c3e50;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.settings-button:hover {
+  background: #229954;
+}
+
+.demo-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #2c3e50;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #7f8c8d;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: #2c3e50;
+}
+
+.modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.form-group input[type="number"],
+.form-group select {
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #bdc3c7;
   border-radius: 4px;
-  background: white;
   font-size: 14px;
-  cursor: pointer;
 }
 
-.control-group select:focus {
+.color-input-group {
+  display: flex;
+  gap: 8px;
+}
+
+.color-input-group input[type="text"] {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.color-input-group input[type="color"] {
+  width: 50px;
+  height: 40px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
   border-color: #3498db;
 }
 
-.info {
-  padding: 12px 20px;
-  background: #fff3cd;
-  border-bottom: 1px solid #ffc107;
-  color: #856404;
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  padding: 20px;
+  border-top: 1px solid #e0e0e0;
 }
 
-.info p {
-  font-size: 13px;
-  line-height: 1.5;
+.reset-button,
+.close-button-primary {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.map-container {
-  flex: 1;
-  position: relative;
-  min-height: 500px;
+.reset-button {
+  background: #e74c3c;
+  color: white;
+}
+
+.reset-button:hover {
+  background: #c0392b;
+}
+
+.close-button-primary {
+  background: #3498db;
+  color: white;
+}
+
+.close-button-primary:hover {
+  background: #2980b9;
 }
 </style>

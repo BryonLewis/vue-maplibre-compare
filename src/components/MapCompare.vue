@@ -179,6 +179,7 @@ export default defineComponent({
       updateLayerVisibility('B');
     };
 
+
     // Watch for layer changes
     watch(() => props.mapLayersA, () => {
       updateLayerVisibility('A');
@@ -186,6 +187,14 @@ export default defineComponent({
 
     watch(() => props.mapLayersB, () => {
       updateLayerVisibility('B');
+    }, { deep: true });
+
+    watch(() => props.mapStyleA, () => {
+      mapA?.setStyle(props.mapStyleA);
+    }, { deep: true });
+
+    watch(() => props.mapStyleB, () => {
+      mapB?.setStyle(props.mapStyleB);
     }, { deep: true });
 
     onMounted(() => {
@@ -229,19 +238,15 @@ export default defineComponent({
 </script>
 
 <template>
-  <div
-    ref="containerRef"
-    class="map-compare-container"
-    :style="{
-      '--swiper-thickness': `${swiperOpts.thickness}px`,
-      '--swiper-grab-thickness': `${Math.max(swiperOpts.grabThickness, swiperOpts.thickness)}px`,
-      '--swiper-handle-size': `${swiperOpts.handleSize}px`,
-      '--swiper-line-color': swiperOpts.lineColor,
-      '--swiper-handle-color': swiperOpts.handleColor,
-      '--swiper-handle-shadow-color': swiperOpts.handleShadowColor,
-      '--swiper-arrow-color': swiperOpts.arrowColor,
-    }"
-  >
+  <div ref="containerRef" class="map-compare-container" :style="{
+    '--swiper-thickness': `${swiperOpts.thickness}px`,
+    '--swiper-grab-thickness': `${Math.max(swiperOpts.grabThickness, swiperOpts.thickness)}px`,
+    '--swiper-handle-size': `${swiperOpts.handleSize}px`,
+    '--swiper-line-color': swiperOpts.lineColor,
+    '--swiper-handle-color': swiperOpts.handleColor,
+    '--swiper-handle-shadow-color': swiperOpts.handleShadowColor,
+    '--swiper-arrow-color': swiperOpts.arrowColor,
+  }">
     <div ref="mapARef" class="map map-a" />
     <div ref="mapBRef" class="map map-b" />
 
