@@ -14,7 +14,7 @@ A Vue 3 component for comparing MapLibre maps side-by-side with a draggable slid
 
 ## Demo
 
-**[Live Demo](https://bryonlewis.github.io/vue-maplibre-compare/)** - Try it out in your browser!
+**[Live Demo](https://bryonlewis.github.io/vue-maplibre-compare/)**
 
 
 ![Map comparison with customizable swiper](docs/images/demo.png)
@@ -25,13 +25,6 @@ A Vue 3 component for comparing MapLibre maps side-by-side with a draggable slid
 
 ```bash
 npm install vue-maplibre-compare maplibre-gl
-```
-
-**Important:** Don't forget to import the component styles and MapLibre GL CSS:
-
-```typescript
-import 'vue-maplibre-compare/dist/style.css'
-import 'maplibre-gl/dist/maplibre-gl.css'
 ```
 
 ## Usage
@@ -68,7 +61,6 @@ app.mount('#app')
 <script setup lang="ts">
 import { ref } from 'vue'
 import { MapCompare } from 'vue-maplibre-compare'
-import 'vue-maplibre-compare/dist/style.css'
 
 const styleA = 'https://demotiles.maplibre.org/style.json'
 const styleB = 'https://demotiles.maplibre.org/style.json'
