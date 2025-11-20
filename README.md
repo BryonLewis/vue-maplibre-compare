@@ -223,4 +223,21 @@ npm run build
 
 This will create the distributable library files in the `dist` directory.
 
+### Versioning and Publishing
+
+This project uses semantic versioning with [standard-version](https://github.com/conventional-changelog/standard-version). See [VERSIONING.md](./VERSIONING.md) for detailed information about:
+
+- How to bump versions locally
+- Publishing via GitHub Actions workflow
+- Commit message conventions
+- Best practices
+
+Quick version commands:
+```bash
+npm run version        # Auto-detect version bump from commits
+npm run version:patch  # Bump patch version (1.0.0 -> 1.0.1)
+npm run version:minor  # Bump minor version (1.0.0 -> 1.1.0)
+npm run version:major  # Bump major version (1.0.0 -> 2.0.0)
+```
+
 
