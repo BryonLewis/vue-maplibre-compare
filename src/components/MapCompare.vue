@@ -135,8 +135,8 @@ export default defineComponent({
       // Capture swiper element for Teleport
       // The swiper is created by useMapCompare and appended to the container
       const orientation = props.swiperOptions?.orientation ?? 'vertical';
-      const swiperClass = orientation === 'horizontal' 
-        ? '.compare-swiper-horizontal' 
+      const swiperClass = orientation === 'horizontal'
+        ? '.compare-swiper-horizontal'
         : '.compare-swiper-vertical';
       const swiperEl = containerRef.value.querySelector(swiperClass);
       if (swiperEl) {
@@ -250,7 +250,7 @@ export default defineComponent({
         light: {
           lineColor: 'white',
           handleColor: 'white',
-          handleShadowColor: 'rgba(0, 0, 0, 0.3)',  
+          handleShadowColor: 'rgba(0, 0, 0, 0.3)',
           arrowColor: '#666',
         },
       };
