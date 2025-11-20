@@ -19,6 +19,7 @@ export interface SwiperOptions {
   handleColor?: string
   handleShadowColor?: string
   arrowColor?: string
+  darkMode?: boolean
 }
 
 export interface MapCompareProps {
@@ -79,6 +80,7 @@ export default defineComponent({
         handleColor: 'white',
         handleShadowColor: 'rgba(0, 0, 0, 0.3)',
         arrowColor: '#666',
+        darkMode: false,
       }),
     },
   },
@@ -110,6 +112,38 @@ export default defineComponent({
             map.setLayoutProperty(layer.id, 'visibility', 'none');
           }
         });
+      }
+    };
+
+    const initializeSwiper = () => {
+      if (!mapA || !mapB || !containerRef.value) return;
+
+      // Unmount existing swiper if it exists
+      if (mapCompareInstance) {
+        mapCompareInstance.unmount();
+        mapCompareInstance = null;
+      }
+
+      // Initialize map compare with current orientation
+      mapCompareInstance = useMapCompare(mapA, mapB, containerRef.value, {
+        orientation: props.swiperOptions?.orientation ?? 'vertical',
+        mousemove: false,
+      });
+      // Manually initialize since maps are now ready
+      mapCompareInstance.initialize();
+
+      // Capture swiper element for Teleport
+      // The swiper is created by useMapCompare and appended to the container
+      const orientation = props.swiperOptions?.orientation ?? 'vertical';
+      const swiperClass = orientation === 'horizontal'
+        ? '.compare-swiper-horizontal'
+        : '.compare-swiper-vertical';
+      const swiperEl = containerRef.value.querySelector(swiperClass);
+      if (swiperEl) {
+        swiperRef.value = swiperEl as HTMLElement;
+        if (slots.icon) {
+          swiperRef.value.classList.add('has-custom-icon');
+        }
       }
     };
 
@@ -154,25 +188,8 @@ export default defineComponent({
         }),
       ]);
 
-      // Initialize map compare after maps are loaded
-      if (mapA && mapB && containerRef.value) {
-        mapCompareInstance = useMapCompare(mapA, mapB, containerRef.value, {
-          orientation: props.swiperOptions?.orientation ?? 'vertical',
-          mousemove: false,
-        });
-        // Manually initialize since maps are now ready
-        mapCompareInstance.initialize();
-
-        // Capture swiper element for Teleport
-        // The swiper is created by useMapCompare and appended to the container
-        const swiperEl = containerRef.value.querySelector('.compare-swiper-vertical');
-        if (swiperEl) {
-          swiperRef.value = swiperEl as HTMLElement;
-          if (slots.icon) {
-            swiperRef.value.classList.add('has-custom-icon');
-          }
-        }
-      }
+      // Initialize swiper after maps are loaded
+      initializeSwiper();
 
       // Apply initial layer visibility
       updateLayerVisibility('A');
@@ -196,6 +213,13 @@ export default defineComponent({
       mapB?.setStyle(props.mapStyleB);
     }, { deep: true });
 
+    // Watch for swiper orientation changes and reinitialize
+    watch(() => props.swiperOptions?.orientation, () => {
+      if (mapA && mapB && mapA.loaded() && mapB.loaded()) {
+        initializeSwiper();
+      }
+    });
+
     onMounted(() => {
       initializeMaps();
     });
@@ -213,16 +237,40 @@ export default defineComponent({
       }
     });
 
-    // Computed swiper options with defaults
-    const swiperOpts = computed(() => ({
-      thickness: props.swiperOptions?.thickness ?? 4,
-      grabThickness: props.swiperOptions?.grabThickness ?? 4,
-      handleSize: props.swiperOptions?.handleSize ?? 40,
-      lineColor: props.swiperOptions?.lineColor ?? 'white',
-      handleColor: props.swiperOptions?.handleColor ?? 'white',
-      handleShadowColor: props.swiperOptions?.handleShadowColor ?? 'rgba(0, 0, 0, 0.3)',
-      arrowColor: props.swiperOptions?.arrowColor ?? '#666',
-    }));
+    // Computed swiper options with defaults and dark mode support
+    const swiperOpts = computed(() => {
+      const darkMode = props.swiperOptions?.darkMode ?? false;
+      const baseColors = {
+        dark: {
+          lineColor: '#333',
+          handleColor: '#333',
+          handleShadowColor: 'rgba(0, 0, 0, 0.3)',
+          arrowColor: '#999',
+        },
+        light: {
+          lineColor: 'white',
+          handleColor: 'white',
+          handleShadowColor: 'rgba(0, 0, 0, 0.3)',
+          arrowColor: '#666',
+        },
+      };
+      const baseColorMode = darkMode ? baseColors.dark : baseColors.light;
+      // Use custom colors if provided, otherwise use defaults
+      const baseLineColor = props.swiperOptions?.lineColor ?? baseColorMode.lineColor;
+      const baseHandleColor = props.swiperOptions?.handleColor ?? baseColorMode.handleColor;
+      const baseArrowColor = props.swiperOptions?.arrowColor ?? baseColorMode.arrowColor;
+
+      // Apply dark mode: darker swiper colors, lighter arrow color
+      return {
+        thickness: props.swiperOptions?.thickness ?? 4,
+        grabThickness: props.swiperOptions?.grabThickness ?? 4,
+        handleSize: props.swiperOptions?.handleSize ?? 40,
+        lineColor: baseLineColor,
+        handleColor: baseHandleColor,
+        handleShadowColor: baseColorMode.handleShadowColor,
+        arrowColor: baseArrowColor,
+      };
+    });
 
     return {
       containerRef,
@@ -378,12 +426,11 @@ export default defineComponent({
   height: var(--swiper-grab-thickness, 4px);
   margin-top: calc(var(--swiper-grab-thickness, 4px) * -0.5);
   background: linear-gradient(to bottom,
-      transparent calc(50% - var(--swiper-grab-thickness, 4px) / 2),
-      var(--swiper-line-color, white) calc(50% - var(--swiper-grab-thickness, 4px) / 2),
-      var(--swiper-line-color, white) calc(50% + var(--swiper-grab-thickness, 4px) / 2),
-      transparent calc(50% + var(--swiper-grab-thickness, 4px) / 2));
+      transparent calc(50% - var(--swiper-thickness, 4px) / 2),
+      var(--swiper-line-color, white) calc(50% - var(--swiper-thickness, 4px) / 2),
+      var(--swiper-line-color, white) calc(50% + var(--swiper-thickness, 4px) / 2),
+      transparent calc(50% + var(--swiper-thickness, 4px) / 2));
   cursor: ns-resize;
-  box-shadow: 0 0 8px var(--swiper-handle-shadow-color, rgba(0, 0, 0, 0.5));
   pointer-events: auto;
   user-select: none;
   -webkit-user-select: none;

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, computed } from 'vue'
 import DemoMapCompare from './DemoMapCompare.vue'
 import DemoLayerCompare from './DemoLayerCompare.vue'
 import type { SwiperOptions } from '../../src/components/MapCompare.vue'
@@ -26,6 +26,17 @@ export default defineComponent({
       handleColor: '#ffffff',
       handleShadowColor: 'rgba(0, 0, 0, 0.3)',
       arrowColor: '#666666',
+      darkMode: false,
+    })
+
+    // Computed swiper options that excludes color properties when darkMode is enabled
+    const computedSwiperOptions = computed((): SwiperOptions => {
+      if (swiperOptions.value.darkMode) {
+        // When darkMode is true, exclude color properties
+        const { lineColor, handleColor, handleShadowColor, arrowColor, ...rest } = swiperOptions.value
+        return rest as SwiperOptions
+      }
+      return swiperOptions.value
     })
 
     // Helper function to extract hex color from CSS color string
@@ -48,15 +59,16 @@ export default defineComponent({
       return '#000000'
     }
 
-    const updateColorFromPicker = (property: keyof SwiperOptions, value: string) => {
+    const updateColorFromPicker = (property: 'lineColor' | 'handleColor' | 'handleShadowColor' | 'arrowColor', value: string) => {
       if (swiperOptions.value) {
-        swiperOptions.value[property] = value as any
+        (swiperOptions.value as any)[property] = value
       }
     }
 
     return {
       demoMode,
       swiperOptions,
+      computedSwiperOptions,
       showSwiperSettings,
       getHexColor,
       updateColorFromPicker,
@@ -94,8 +106,8 @@ export default defineComponent({
     </div>
 
     <div class="demo-content">
-      <DemoMapCompare v-if="demoMode === 'map-compare'" :swiperOptions="swiperOptions" />
-      <DemoLayerCompare v-else-if="demoMode === 'layer-compare'" :swiperOptions="swiperOptions" />
+      <DemoMapCompare v-if="demoMode === 'map-compare'" :swiperOptions="computedSwiperOptions" />
+      <DemoLayerCompare v-else-if="demoMode === 'layer-compare'" :swiperOptions="computedSwiperOptions" />
     </div>
 
     <!-- Swiper Settings Modal -->
@@ -111,6 +123,13 @@ export default defineComponent({
           </button>
         </div>
         <div class="modal-body">
+          <div class="form-group">
+            <label>
+              <input type="checkbox" v-model="swiperOptions.darkMode" />
+              <span style="margin-left: 8px;">Dark Mode</span>
+            </label>
+          </div>
+
           <div class="form-group">
             <label>Orientation</label>
             <select v-model="swiperOptions.orientation">
@@ -137,32 +156,72 @@ export default defineComponent({
           <div class="form-group">
             <label>Line Color</label>
             <div class="color-input-group">
-              <input type="text" v-model="swiperOptions.lineColor" placeholder="#ffffff" />
-              <input type="color" :value="getHexColor(swiperOptions.lineColor)" @input="updateColorFromPicker('lineColor', ($event.target as HTMLInputElement).value)" />
+              <input 
+                type="text" 
+                v-model="swiperOptions.lineColor" 
+                placeholder="#ffffff" 
+                :disabled="swiperOptions.darkMode"
+              />
+              <input 
+                type="color" 
+                :value="getHexColor(swiperOptions.lineColor)" 
+                @input="updateColorFromPicker('lineColor', ($event.target as HTMLInputElement).value)" 
+                :disabled="swiperOptions.darkMode"
+              />
             </div>
           </div>
 
           <div class="form-group">
             <label>Handle Color</label>
             <div class="color-input-group">
-              <input type="text" v-model="swiperOptions.handleColor" placeholder="#ffffff" />
-              <input type="color" :value="getHexColor(swiperOptions.handleColor)" @input="updateColorFromPicker('handleColor', ($event.target as HTMLInputElement).value)" />
+              <input 
+                type="text" 
+                v-model="swiperOptions.handleColor" 
+                placeholder="#ffffff" 
+                :disabled="swiperOptions.darkMode"
+              />
+              <input 
+                type="color" 
+                :value="getHexColor(swiperOptions.handleColor)" 
+                @input="updateColorFromPicker('handleColor', ($event.target as HTMLInputElement).value)" 
+                :disabled="swiperOptions.darkMode"
+              />
             </div>
           </div>
 
           <div class="form-group">
             <label>Handle Shadow Color</label>
             <div class="color-input-group">
-              <input type="text" v-model="swiperOptions.handleShadowColor" placeholder="rgba(0, 0, 0, 0.3)" />
-              <input type="color" :value="getHexColor(swiperOptions.handleShadowColor)" @input="updateColorFromPicker('handleShadowColor', ($event.target as HTMLInputElement).value)" />
+              <input 
+                type="text" 
+                v-model="swiperOptions.handleShadowColor" 
+                placeholder="rgba(0, 0, 0, 0.3)" 
+                :disabled="swiperOptions.darkMode"
+              />
+              <input 
+                type="color" 
+                :value="getHexColor(swiperOptions.handleShadowColor)" 
+                @input="updateColorFromPicker('handleShadowColor', ($event.target as HTMLInputElement).value)" 
+                :disabled="swiperOptions.darkMode"
+              />
             </div>
           </div>
 
           <div class="form-group">
             <label>Arrow Color</label>
             <div class="color-input-group">
-              <input type="text" v-model="swiperOptions.arrowColor" placeholder="#666666" />
-              <input type="color" :value="getHexColor(swiperOptions.arrowColor)" @input="updateColorFromPicker('arrowColor', ($event.target as HTMLInputElement).value)" />
+              <input 
+                type="text" 
+                v-model="swiperOptions.arrowColor" 
+                placeholder="#666666" 
+                :disabled="swiperOptions.darkMode"
+              />
+              <input 
+                type="color" 
+                :value="getHexColor(swiperOptions.arrowColor)" 
+                @input="updateColorFromPicker('arrowColor', ($event.target as HTMLInputElement).value)" 
+                :disabled="swiperOptions.darkMode"
+              />
             </div>
           </div>
         </div>
@@ -176,6 +235,7 @@ export default defineComponent({
             handleColor: '#ffffff',
             handleShadowColor: 'rgba(0, 0, 0, 0.3)',
             arrowColor: '#666666',
+            darkMode: false,
           }">Reset to Defaults</button>
           <button class="close-button-primary" @click="showSwiperSettings = false">Close</button>
         </div>
@@ -400,6 +460,18 @@ body,
 .form-group select:focus {
   outline: none;
   border-color: #3498db;
+}
+
+.form-group input:disabled,
+.form-group input[type="color"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f5f5f5;
+}
+
+.form-group label input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
 }
 
 .modal-footer {

@@ -171,6 +171,7 @@ interface SwiperOptions {
   handleColor?: string;        // Color of the handle circle (default: 'white')
   handleShadowColor?: string;  // Color of the handle shadow
   arrowColor?: string;         // Color of the arrows
+  darkMode?: boolean           // Swaps to darkmode if other colors aren't provided
 }
 ```
 
