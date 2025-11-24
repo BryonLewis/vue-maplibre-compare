@@ -183,12 +183,10 @@ export default defineComponent({
         zoom: props.zoom,
         bearing: props.bearing,
         pitch: props.pitch,
-        transformRequest: (url) => {
-          return {
-            url,
-            headers: props.headers,
-          };
-         },
+        transformRequest: (url) => ({
+          url,
+          headers: props.headers,
+        }),
       });
 
       // Initialize Map B
@@ -199,12 +197,10 @@ export default defineComponent({
         zoom: props.zoom,
         bearing: props.bearing,
         pitch: props.pitch,
-        transformRequest: (url) => {
-          return {
-            url,
-            headers: props.headers,
-          };
-         },
+        transformRequest: (url) => ({
+          url,
+          headers: props.headers,
+        }),
       });
 
       // Enforce absolute positioning immediately after map creation
@@ -376,9 +372,28 @@ export default defineComponent({
       '--swiper-arrow-color': swiperOpts.arrowColor,
     }"
   >
-    <div ref="mapARef" class="map map-a" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" />
-    <div ref="mapBRef" class="map map-b" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" />
-
+    <div
+      ref="mapARef"
+      class="map map-a"
+      :style="{
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+      }"
+    />
+    <div
+      ref="mapBRef"
+      class="map map-b"
+      :style="{
+        position: 'absolute',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+      }"
+    />
     <Teleport v-if="swiperRef && hasIconSlot" :to="swiperRef">
       <div class="custom-swiper-icon">
         <slot name="icon" />
