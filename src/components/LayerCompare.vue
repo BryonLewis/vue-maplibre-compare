@@ -2,7 +2,7 @@
 import {
   defineComponent, PropType,
 } from 'vue';
-import { StyleSpecification } from 'maplibre-gl';
+import { StyleSpecification, RequestParameters } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { SwiperOptions } from './MapCompare.vue';
 import MapCompare from './MapCompare.vue';
@@ -58,7 +58,7 @@ export default defineComponent({
     },
     transformRequest: {
       type: Function as PropType<
-        (url: string, resourceType?: 'Style' | 'Source' | 'Tile' | 'Glyphs' | 'Sprite') => maplibregl.RequestParameters
+      (url: string, resourceType?: 'Style' | 'Source' | 'Tile' | 'Glyphs' | 'Sprite') => RequestParameters
       >,
       default: undefined,
     },

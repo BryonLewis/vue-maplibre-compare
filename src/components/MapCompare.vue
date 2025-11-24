@@ -71,7 +71,7 @@ export default defineComponent({
     },
     transformRequest: {
       type: Function as PropType<
-        (url: string, resourceType?: maplibregl.ResourceType) => maplibregl.RequestParameters
+      (url: string, resourceType?: maplibregl.ResourceType) => maplibregl.RequestParameters
       >,
       default: undefined,
     },
@@ -194,7 +194,7 @@ export default defineComponent({
         zoom: props.zoom,
         bearing: props.bearing,
         pitch: props.pitch,
-        transformRequest: props.transformRequest ? props.transformRequest : (url, resourceType) => ({
+        transformRequest: props.transformRequest ? props.transformRequest : (url) => ({
           url,
           headers: props.headers,
         }),
@@ -208,7 +208,7 @@ export default defineComponent({
         zoom: props.zoom,
         bearing: props.bearing,
         pitch: props.pitch,
-        transformRequest: props.transformRequest ? props.transformRequest : (url, resourceType) => ({
+        transformRequest: props.transformRequest ? props.transformRequest : (url) => ({
           url,
           headers: props.headers,
         }),
