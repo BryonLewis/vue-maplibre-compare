@@ -34,7 +34,7 @@ npm install vue-maplibre-compare maplibre-gl
 ```typescript
 import { createApp } from 'vue'
 import MapComparePlugin from 'vue-maplibre-compare'
-import 'vue-maplibre-compare/dist/style.css'
+import 'vue-maplibre-compare/dist/vue-maplibre-compare.css'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -135,7 +135,7 @@ The `LayerCompare` component uses a single map style and shows different layers 
 
 <script setup lang="ts">
 import { LayerCompare } from 'vue-maplibre-compare'
-import 'vue-maplibre-compare/dist/style.css'
+import 'vue-maplibre-compare/dist/vue-maplibre-compare.css'
 </script>
 ```
 
@@ -157,6 +157,7 @@ Compare two different map styles side-by-side.
 | `zoom` | `number` | No | `1` | Initial zoom level |
 | `bearing` | `number` | No | `0` | Initial bearing (rotation) in degrees |
 | `pitch` | `number` | No | `0` | Initial pitch (tilt) in degrees |
+| `headers` | `Record<string, any>` | No | `{}` | Headers to add to requests sent by the map
 | `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
 
 ### SwiperOptions Interface

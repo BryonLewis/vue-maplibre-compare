@@ -11,7 +11,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/vue-maplibre-compare.es.js",
       "require": "./dist/vue-maplibre-compare.umd.js"
-    }
+    },
+    "./dist/vue-maplibre-compare.css": "./dist/vue-maplibre-compare.css"
   },
   "files": [
     "dist"

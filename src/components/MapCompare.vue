@@ -1,6 +1,6 @@
 <script lang="ts">
 import {
-  defineComponent, ref, onMounted, onBeforeUnmount, watch, PropType, computed,
+  defineComponent, ref, onMounted, onBeforeUnmount, watch, PropType, computed, nextTick,
 } from 'vue';
 import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -69,6 +69,10 @@ export default defineComponent({
       type: Number,
       default: 0,
     },
+    headers: {
+      type: Object as PropType<Record<string, string>>,
+      default: () => ({}),
+    },
     swiperOptions: {
       type: Object as PropType<SwiperOptions>,
       default: () => ({
@@ -93,6 +97,27 @@ export default defineComponent({
     let mapA: MaplibreMap | null = null;
     let mapB: MaplibreMap | null = null;
     let mapCompareInstance: ReturnType<typeof useMapCompare> | null = null;
+    let mapAResizeHandler: (() => void) | null = null;
+    let mapBResizeHandler: (() => void) | null = null;
+
+    // Helper function to enforce absolute positioning on map containers
+    // MapLibre automatically sets position to relative during initialization/resize
+    const enforceAbsolutePosition = () => {
+      if (mapARef.value) {
+        mapARef.value.style.setProperty('position', 'absolute', 'important');
+        mapARef.value.style.setProperty('top', '0', 'important');
+        mapARef.value.style.setProperty('left', '0', 'important');
+        mapARef.value.style.setProperty('width', '100%', 'important');
+        mapARef.value.style.setProperty('height', '100%', 'important');
+      }
+      if (mapBRef.value) {
+        mapBRef.value.style.setProperty('position', 'absolute', 'important');
+        mapBRef.value.style.setProperty('top', '0', 'important');
+        mapBRef.value.style.setProperty('left', '0', 'important');
+        mapBRef.value.style.setProperty('width', '100%', 'important');
+        mapBRef.value.style.setProperty('height', '100%', 'important');
+      }
+    };
 
     const updateLayerVisibility = (mapType: 'A' | 'B') => {
       const map = mapType === 'A' ? mapA : mapB;
@@ -158,6 +183,12 @@ export default defineComponent({
         zoom: props.zoom,
         bearing: props.bearing,
         pitch: props.pitch,
+        transformRequest: (url) => {
+          return {
+            url,
+            headers: props.headers,
+          };
+         },
       });
 
       // Initialize Map B
@@ -168,7 +199,17 @@ export default defineComponent({
         zoom: props.zoom,
         bearing: props.bearing,
         pitch: props.pitch,
+        transformRequest: (url) => {
+          return {
+            url,
+            headers: props.headers,
+          };
+         },
       });
+
+      // Enforce absolute positioning immediately after map creation
+      // MapLibre sets position to relative during initialization
+      enforceAbsolutePosition();
 
       // Wait for maps to be ready before initializing compare
       await Promise.all([
@@ -188,12 +229,41 @@ export default defineComponent({
         }),
       ]);
 
-      // Initialize swiper after maps are loaded
+      // Wait for next tick to ensure DOM has computed layout
+      await nextTick();
+
+      // Trigger resize on both maps to ensure they have proper dimensions
+      // This is critical when the container height is initially 0
+      mapA!.resize();
+      mapB!.resize();
+
+      // Enforce absolute positioning after resize
+      // MapLibre may reset position to relative during resize
+      enforceAbsolutePosition();
+
+      // Wait one more tick after resize to ensure dimensions are updated
+      await nextTick();
+
+      // Enforce again after nextTick in case MapLibre modified styles
+      enforceAbsolutePosition();
+
+      // Initialize swiper after maps are loaded and resized
       initializeSwiper();
 
       // Apply initial layer visibility
       updateLayerVisibility('A');
       updateLayerVisibility('B');
+
+      // Set up event listeners to re-enforce position after resize events
+      // MapLibre may reset position to relative during resize operations
+      mapAResizeHandler = () => {
+        enforceAbsolutePosition();
+      };
+      mapBResizeHandler = () => {
+        enforceAbsolutePosition();
+      };
+      mapA!.on('resize', mapAResizeHandler);
+      mapB!.on('resize', mapBResizeHandler);
     };
 
     // Watch for layer changes
@@ -228,13 +298,21 @@ export default defineComponent({
       mapCompareInstance?.unmount();
       mapCompareInstance = null;
       if (mapA) {
+        if (mapAResizeHandler) {
+          mapA.off('resize', mapAResizeHandler);
+        }
         mapA.remove();
         mapA = null;
       }
       if (mapB) {
+        if (mapBResizeHandler) {
+          mapB.off('resize', mapBResizeHandler);
+        }
         mapB.remove();
         mapB = null;
       }
+      mapAResizeHandler = null;
+      mapBResizeHandler = null;
     });
 
     // Computed swiper options with defaults and dark mode support
@@ -298,8 +376,8 @@ export default defineComponent({
       '--swiper-arrow-color': swiperOpts.arrowColor,
     }"
   >
-    <div ref="mapARef" class="map map-a" />
-    <div ref="mapBRef" class="map map-b" />
+    <div ref="mapARef" class="map map-a" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" />
+    <div ref="mapBRef" class="map map-b" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" />
 
     <Teleport v-if="swiperRef && hasIconSlot" :to="swiperRef">
       <div class="custom-swiper-icon">
@@ -322,7 +400,7 @@ export default defineComponent({
 }
 
 .map {
-  position: absolute;
+  position: absolute !important;
   top: 0;
   left: 0;
   width: 100%;
