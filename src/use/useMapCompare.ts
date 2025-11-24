@@ -68,31 +68,32 @@ export function useMapCompare(
   // ------------------------
   // Helpers
   // ------------------------
-  const setPosition = (x: number) => {
+  const setPosition = (pos: number) => {
     if (!bounds.value || !controlContainer.value) return;
 
     const limit = isHorizontal ? bounds.value.height : bounds.value.width;
-    const posX = Math.min(x, limit);
+    const posX = Math.min(pos, limit);
 
+    // Move the swiper handle
     const transform = isHorizontal
       ? `translate(0, ${posX}px)`
       : `translate(${posX}px, 0)`;
-
     controlContainer.value.style.transform = transform;
-
-    // Clip the maps
-    const clipA = isHorizontal
-      ? `rect(0, 999em, ${posX}px, 0)`
-      : `rect(0, ${posX}px, ${bounds.value.height}px, 0)`;
-
-    const clipB = isHorizontal
-      ? `rect(${posX}px, 999em, ${bounds.value.height}px, 0)`
-      : `rect(0, 999em, ${bounds.value.height}px, ${posX}px)`;
 
     const containerA = mapA.getContainer();
     const containerB = mapB.getContainer();
-    containerA.style.clip = clipA;
-    containerB.style.clip = clipB;
+
+    if (isHorizontal) {
+      // Horizontal (up/down)
+      // A = top part, B = bottom part
+      containerA.style.clipPath = `inset(0 0 calc(100% - ${posX}px) 0)`;
+      containerB.style.clipPath = `inset(${posX}px 0 0 0)`;
+    } else {
+      // Vertical (left/right)
+      // A = left part, B = right part
+      containerA.style.clipPath = `inset(0 calc(100% - ${posX}px) 0 0)`;
+      containerB.style.clipPath = `inset(0 0 0 ${posX}px)`;
+    }
 
     currentPosition.value = posX;
   };
@@ -132,8 +133,6 @@ export function useMapCompare(
     // Restore text selection
     document.body.style.userSelect = '';
     document.body.style.webkitUserSelect = '';
-    document.body.style.mozUserSelect = '';
-    document.body.style.msUserSelect = '';
   };
 
   const onMouseUp = () => {
@@ -157,8 +156,6 @@ export function useMapCompare(
     // Prevent text selection during drag
     document.body.style.userSelect = 'none';
     document.body.style.webkitUserSelect = 'none';
-    document.body.style.mozUserSelect = 'none';
-    document.body.style.msUserSelect = 'none';
 
     if (e.touches) {
       document.addEventListener('touchmove', onMove, { passive: false });
@@ -189,15 +186,90 @@ export function useMapCompare(
       ? 'maplibre-compare maplibre-compare-horizontal'
       : 'maplibre-compare';
 
+    // Set inline styles to ensure proper dimensions
+    // The element is created dynamically, so CSS might not apply immediately
+    controlContainer.value.style.position = 'absolute';
+    controlContainer.value.style.top = '0';
+    controlContainer.value.style.left = '0';
+    controlContainer.value.style.width = '100%';
+    controlContainer.value.style.height = '100%';
+    controlContainer.value.style.zIndex = '2';
+    controlContainer.value.style.pointerEvents = 'none';
+
     swiper.value = document.createElement('div');
     swiper.value.className = isHorizontal
       ? 'compare-swiper-horizontal'
       : 'compare-swiper-vertical';
 
+    // Set inline styles for swiper to ensure proper dimensions
+    // The element is created dynamically, so CSS might not apply immediately
+    if (isHorizontal) {
+      // Horizontal swiper (top/bottom split)
+      swiper.value.style.position = 'absolute';
+      swiper.value.style.left = '0';
+      swiper.value.style.right = '0';
+      swiper.value.style.height = 'var(--swiper-grab-thickness, 4px)';
+      swiper.value.style.marginTop = 'calc(var(--swiper-grab-thickness, 4px) * -0.5)';
+      swiper.value.style.cursor = 'ns-resize';
+    } else {
+      // Vertical swiper (left/right split)
+      swiper.value.style.position = 'absolute';
+      swiper.value.style.top = '0';
+      swiper.value.style.bottom = '0';
+      swiper.value.style.width = 'var(--swiper-grab-thickness, 4px)';
+      swiper.value.style.marginLeft = 'calc(var(--swiper-grab-thickness, 4px) * -0.5)';
+      swiper.value.style.cursor = 'ew-resize';
+    }
+    swiper.value.style.pointerEvents = 'auto';
+    swiper.value.style.userSelect = 'none';
+    swiper.value.style.webkitUserSelect = 'none';
+
     controlContainer.value.appendChild(swiper.value);
     targetEl.appendChild(controlContainer.value);
 
+    // Ensure styles are applied after DOM insertion
+    // Re-apply styles in case they were overridden
+    if (controlContainer.value) {
+      controlContainer.value.style.position = 'absolute';
+      controlContainer.value.style.top = '0';
+      controlContainer.value.style.left = '0';
+      controlContainer.value.style.width = '100%';
+      controlContainer.value.style.height = '100%';
+      controlContainer.value.style.zIndex = '2';
+      controlContainer.value.style.pointerEvents = 'none';
+    }
+    // Re-apply swiper styles after DOM insertion
+    if (swiper.value) {
+      if (isHorizontal) {
+        swiper.value.style.position = 'absolute';
+        swiper.value.style.left = '0';
+        swiper.value.style.right = '0';
+        swiper.value.style.height = 'var(--swiper-grab-thickness, 4px)';
+        swiper.value.style.marginTop = 'calc(var(--swiper-grab-thickness, 4px) * -0.5)';
+        swiper.value.style.cursor = 'ns-resize';
+      } else {
+        swiper.value.style.position = 'absolute';
+        swiper.value.style.top = '0';
+        swiper.value.style.bottom = '0';
+        swiper.value.style.width = 'var(--swiper-grab-thickness, 4px)';
+        swiper.value.style.marginLeft = 'calc(var(--swiper-grab-thickness, 4px) * -0.5)';
+        swiper.value.style.cursor = 'ew-resize';
+      }
+      swiper.value.style.pointerEvents = 'auto';
+    }
+
     bounds.value = mapB.getContainer().getBoundingClientRect();
+
+    // Ensure container has valid dimensions before proceeding
+    // If dimensions are 0, trigger resize and retry
+    const dimension = isHorizontal ? bounds.value.height : bounds.value.width;
+    if (dimension === 0) {
+      // Trigger resize on both maps to ensure they have proper dimensions
+      mapA.resize();
+      mapB.resize();
+      // Recalculate bounds after resize
+      bounds.value = mapB.getContainer().getBoundingClientRect();
+    }
 
     const startPos = (isHorizontal ? bounds.value.height : bounds.value.width) / 2;
 
@@ -208,6 +280,35 @@ export function useMapCompare(
 
     resizeHandler = () => {
       bounds.value = mapB.getContainer().getBoundingClientRect();
+      // Re-apply styles in case they were reset during resize
+      if (controlContainer.value) {
+        controlContainer.value.style.position = 'absolute';
+        controlContainer.value.style.top = '0';
+        controlContainer.value.style.left = '0';
+        controlContainer.value.style.width = '100%';
+        controlContainer.value.style.height = '100%';
+        controlContainer.value.style.zIndex = '2';
+        controlContainer.value.style.pointerEvents = 'none';
+      }
+      // Re-apply swiper styles
+      if (swiper.value) {
+        if (isHorizontal) {
+          swiper.value.style.position = 'absolute';
+          swiper.value.style.left = '0';
+          swiper.value.style.right = '0';
+          swiper.value.style.height = 'var(--swiper-grab-thickness, 4px)';
+          swiper.value.style.marginTop = 'calc(var(--swiper-grab-thickness, 4px) * -0.5)';
+          swiper.value.style.cursor = 'ns-resize';
+        } else {
+          swiper.value.style.position = 'absolute';
+          swiper.value.style.top = '0';
+          swiper.value.style.bottom = '0';
+          swiper.value.style.width = 'var(--swiper-grab-thickness, 4px)';
+          swiper.value.style.marginLeft = 'calc(var(--swiper-grab-thickness, 4px) * -0.5)';
+          swiper.value.style.cursor = 'ew-resize';
+        }
+        swiper.value.style.pointerEvents = 'auto';
+      }
       if (currentPosition.value) setPosition(currentPosition.value);
     };
     mapB.on('resize', resizeHandler);
@@ -236,11 +337,11 @@ export function useMapCompare(
     const b = mapB.getContainer();
 
     if (a) {
-      a.style.clip = '';
+      a.style.clipPath = '';
       a.removeEventListener('mousemove', onMove);
     }
     if (b) {
-      b.style.clip = '';
+      b.style.clipPath = '';
       b.removeEventListener('mousemove', onMove);
     }
 

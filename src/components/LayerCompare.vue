@@ -52,6 +52,10 @@ export default defineComponent({
       type: Number,
       default: 0,
     },
+    headers: {
+      type: Object as PropType<Record<string, string>>,
+      default: () => ({}),
+    },
     swiperOptions: {
       type: Object as PropType<SwiperOptions>,
       default: () => ({
@@ -84,6 +88,7 @@ export default defineComponent({
     :zoom="zoom"
     :bearing="bearing"
     :pitch="pitch"
+    :headers="headers"
   />
 </template>
 
