@@ -69,6 +69,12 @@ export default defineComponent({
       type: Number,
       default: 0,
     },
+    transformRequest: {
+      type: Function as PropType<
+        (url: string, resourceType?: maplibregl.ResourceType) => maplibregl.RequestParameters
+      >,
+      default: undefined,
+    },
     headers: {
       type: Object as PropType<Record<string, string>>,
       default: () => ({}),
@@ -88,7 +94,8 @@ export default defineComponent({
       }),
     },
   },
-  setup(props, { slots }) {
+  emits: ['panend', 'zoomend', 'pitchend', 'rotateend'],
+  setup(props, { slots, emit }) {
     const containerRef = ref<HTMLElement>();
     const mapARef = ref<HTMLElement>();
     const mapBRef = ref<HTMLElement>();
@@ -99,6 +106,10 @@ export default defineComponent({
     let mapCompareInstance: ReturnType<typeof useMapCompare> | null = null;
     let mapAResizeHandler: (() => void) | null = null;
     let mapBResizeHandler: (() => void) | null = null;
+    let mapAMoveEndHandler: (() => void) | null = null;
+    let mapAZoomEndHandler: (() => void) | null = null;
+    let mapAPitchEndHandler: (() => void) | null = null;
+    let mapARotateEndHandler: (() => void) | null = null;
 
     // Helper function to enforce absolute positioning on map containers
     // MapLibre automatically sets position to relative during initialization/resize
@@ -183,7 +194,7 @@ export default defineComponent({
         zoom: props.zoom,
         bearing: props.bearing,
         pitch: props.pitch,
-        transformRequest: (url) => ({
+        transformRequest: props.transformRequest ? props.transformRequest : (url, resourceType) => ({
           url,
           headers: props.headers,
         }),
@@ -197,7 +208,7 @@ export default defineComponent({
         zoom: props.zoom,
         bearing: props.bearing,
         pitch: props.pitch,
-        transformRequest: (url) => ({
+        transformRequest: props.transformRequest ? props.transformRequest : (url, resourceType) => ({
           url,
           headers: props.headers,
         }),
@@ -260,6 +271,47 @@ export default defineComponent({
       };
       mapA!.on('resize', mapAResizeHandler);
       mapB!.on('resize', mapBResizeHandler);
+
+      // Set up event listeners for map interactions
+      // Since maps are synced, we only need to listen to one map for each event type
+      // We'll listen to mapA and emit events when it finishes
+      mapAMoveEndHandler = () => {
+        emit('panend', {
+          center: mapA!.getCenter().toArray() as [number, number],
+          zoom: mapA!.getZoom(),
+          bearing: mapA!.getBearing(),
+          pitch: mapA!.getPitch(),
+        });
+      };
+      mapAZoomEndHandler = () => {
+        emit('zoomend', {
+          center: mapA!.getCenter().toArray() as [number, number],
+          zoom: mapA!.getZoom(),
+          bearing: mapA!.getBearing(),
+          pitch: mapA!.getPitch(),
+        });
+      };
+      mapAPitchEndHandler = () => {
+        emit('pitchend', {
+          center: mapA!.getCenter().toArray() as [number, number],
+          zoom: mapA!.getZoom(),
+          bearing: mapA!.getBearing(),
+          pitch: mapA!.getPitch(),
+        });
+      };
+      mapARotateEndHandler = () => {
+        emit('rotateend', {
+          center: mapA!.getCenter().toArray() as [number, number],
+          zoom: mapA!.getZoom(),
+          bearing: mapA!.getBearing(),
+          pitch: mapA!.getPitch(),
+        });
+      };
+
+      mapA!.on('moveend', mapAMoveEndHandler);
+      mapA!.on('zoomend', mapAZoomEndHandler);
+      mapA!.on('pitchend', mapAPitchEndHandler);
+      mapA!.on('rotateend', mapARotateEndHandler);
     };
 
     // Watch for layer changes
@@ -297,6 +349,18 @@ export default defineComponent({
         if (mapAResizeHandler) {
           mapA.off('resize', mapAResizeHandler);
         }
+        if (mapAMoveEndHandler) {
+          mapA.off('moveend', mapAMoveEndHandler);
+        }
+        if (mapAZoomEndHandler) {
+          mapA.off('zoomend', mapAZoomEndHandler);
+        }
+        if (mapAPitchEndHandler) {
+          mapA.off('pitchend', mapAPitchEndHandler);
+        }
+        if (mapARotateEndHandler) {
+          mapA.off('rotateend', mapARotateEndHandler);
+        }
         mapA.remove();
         mapA = null;
       }
@@ -309,6 +373,10 @@ export default defineComponent({
       }
       mapAResizeHandler = null;
       mapBResizeHandler = null;
+      mapAMoveEndHandler = null;
+      mapAZoomEndHandler = null;
+      mapAPitchEndHandler = null;
+      mapARotateEndHandler = null;
     });
 
     // Computed swiper options with defaults and dark mode support
