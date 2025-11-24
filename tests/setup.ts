@@ -15,6 +15,7 @@ vi.mock('maplibre-gl', () => {
     })),
     setLayoutProperty: vi.fn(),
     setStyle: vi.fn(),
+    resize: vi.fn(),
     getContainer: vi.fn(() => ({
       style: {},
       getBoundingClientRect: vi.fn(() => ({
