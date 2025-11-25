@@ -58,7 +58,7 @@ export default defineComponent({
     },
     transformRequest: {
       type: Function as PropType<
-      (url: string, resourceType?: 'Style' | 'Source' | 'Tile' | 'Glyphs' | 'Sprite') => RequestParameters
+      (url: string, resourceType?: maplibregl.ResourceType) => RequestParameters
       >,
       default: undefined,
     },
