@@ -216,8 +216,8 @@ export default defineComponent({
         style: props.mapStyleA,
         center: props.camera.center,
         zoom: props.camera.zoom,
-        bearing: props.camera.bearing,
-        pitch: props.camera.pitch,
+        bearing: props.camera.bearing || 0,
+        pitch: props.camera.pitch || 0,
         transformRequest: props.transformRequest ? props.transformRequest : (url) => ({
           url,
           headers: props.headers,
