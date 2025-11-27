@@ -116,9 +116,14 @@ export default defineComponent({
     </div>
 
     <div class="map-container">
-      <MapCompare :mapStyleA="availableStyles[selectedStyleIndexA]" :mapStyleB="availableStyles[selectedStyleIndexB]"
-        :mapLayersA="selectedLayersA" :mapLayersB="selectedLayersB" :center="[-74.1847, 43.1339]" :zoom="9" :bearing="0"
-        :pitch="0" :swiperOptions="swiperOptions" />
+      <MapCompare
+        :mapStyleA="availableStyles[selectedStyleIndexA]"
+        :mapStyleB="availableStyles[selectedStyleIndexB]"
+        :mapLayersA="selectedLayersA"
+        :mapLayersB="selectedLayersB"
+        :camera="{center: [-74.1847, 43.1339], zoom: 9, bearing: 0, pitch: 0}"
+        :swiperOptions="swiperOptions"
+      />
     </div>
   </div>
 </template>

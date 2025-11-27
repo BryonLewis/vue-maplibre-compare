@@ -6,6 +6,7 @@ import { StyleSpecification, RequestParameters, ResourceType } from 'maplibre-gl
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { SwiperOptions } from './MapCompare.vue';
 import MapCompare from './MapCompare.vue';
+import { type CameraData } from './MapCompare.vue';
 
 export interface LayerCompareProps {
   mapStyle: string | StyleSpecification
@@ -36,21 +37,19 @@ export default defineComponent({
       type: Array as PropType<string[]>,
       default: () => [],
     },
-    center: {
-      type: Array as unknown as PropType<[number, number]>,
-      default: () => [0, 0],
+    layerOrder: {
+      type: String as PropType<'ascending' | 'descending'>,
+      default: 'ascending',
     },
-    zoom: {
-      type: Number,
-      default: 1,
-    },
-    bearing: {
-      type: Number,
-      default: 0,
-    },
-    pitch: {
-      type: Number,
-      default: 0,
+    camera: {
+      type: Object as PropType<CameraData>,
+      required: true,
+      default: () => ({
+        center: [0, 0],
+        zoom: 0,
+        bearing: 0,
+        pitch: 0,
+      }),
     },
     headers: {
       type: Object as PropType<Record<string, string>>,
@@ -111,10 +110,8 @@ export default defineComponent({
     :swiper-options="swiperOptions"
     :map-layers-a="mapLayersA"
     :map-layers-b="mapLayersB"
-    :center="center"
-    :zoom="zoom"
-    :bearing="bearing"
-    :pitch="pitch"
+    :camera="camera"
+    :layer-order="layerOrder"
     :headers="headers"
     :transform-request="transformRequest"
     @panend="handlePanEnd"

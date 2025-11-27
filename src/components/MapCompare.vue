@@ -34,6 +34,13 @@ export interface MapCompareProps {
   swiperOptions?: SwiperOptions
 }
 
+export interface CameraData {
+  center: [number, number]
+  zoom: number
+  bearing?: number
+  pitch?: number
+}
+
 export default defineComponent({
   name: 'MapCompare',
   props: {
@@ -53,21 +60,13 @@ export default defineComponent({
       type: Array as PropType<string[]>,
       default: () => [],
     },
-    center: {
-      type: Array as unknown as PropType<[number, number]>,
-      default: () => [0, 0],
+    camera: {
+      type: Object as PropType<CameraData>,
+      default: () => ({ center: [0, 0], zoom: 1, bearing: 0, pitch: 0 }),
     },
-    zoom: {
-      type: Number,
-      default: 1,
-    },
-    bearing: {
-      type: Number,
-      default: 0,
-    },
-    pitch: {
-      type: Number,
-      default: 0,
+    layerOrder: {
+      type: String as PropType<'ascending' | 'descending'>,
+      default: 'ascending',
     },
     transformRequest: {
       type: Function as PropType<
@@ -151,6 +150,26 @@ export default defineComponent({
       }
     };
 
+    const updateLayerOrdering = (mapType: 'A' | 'B') => {
+      const map = mapType === 'A' ? mapA : mapB;
+      const enabledLayers = mapType === 'A' ? props.mapLayersA : props.mapLayersB;
+
+      if (!map || !map.isStyleLoaded()) return;
+      if (!enabledLayers || enabledLayers.length === 0) return;
+
+      // Reorder layers based on layerOrder prop
+      const layersInStyle = map.getStyle().layers || [];
+      const orderedLayers = props.layerOrder === 'ascending'
+        ? enabledLayers
+        : [...enabledLayers].reverse();
+
+      orderedLayers.forEach((layerId) => {
+        if (layersInStyle.find((l) => l.id === layerId)) {
+          map.moveLayer(layerId);
+        }
+      });
+    };
+
     const initializeSwiper = () => {
       if (!mapA || !mapB || !containerRef.value) return;
 
@@ -190,10 +209,10 @@ export default defineComponent({
       mapA = new maplibregl.Map({
         container: mapARef.value,
         style: props.mapStyleA,
-        center: props.center,
-        zoom: props.zoom,
-        bearing: props.bearing,
-        pitch: props.pitch,
+        center: props.camera.center,
+        zoom: props.camera.zoom,
+        bearing: props.camera.bearing,
+        pitch: props.camera.pitch,
         transformRequest: props.transformRequest ? props.transformRequest : (url) => ({
           url,
           headers: props.headers,
@@ -204,10 +223,10 @@ export default defineComponent({
       mapB = new maplibregl.Map({
         container: mapBRef.value,
         style: props.mapStyleB,
-        center: props.center,
-        zoom: props.zoom,
-        bearing: props.bearing,
-        pitch: props.pitch,
+        center: props.camera.center,
+        zoom: props.camera.zoom,
+        bearing: props.camera.bearing || 0,
+        pitch: props.camera.pitch || 0,
         transformRequest: props.transformRequest ? props.transformRequest : (url) => ({
           url,
           headers: props.headers,
@@ -259,7 +278,9 @@ export default defineComponent({
 
       // Apply initial layer visibility
       updateLayerVisibility('A');
+      updateLayerOrdering('A');
       updateLayerVisibility('B');
+      updateLayerOrdering('B');
 
       // Set up event listeners to re-enforce position after resize events
       // MapLibre may reset position to relative during resize operations
@@ -317,11 +338,18 @@ export default defineComponent({
     // Watch for layer changes
     watch(() => props.mapLayersA, () => {
       updateLayerVisibility('A');
+      updateLayerOrdering('A');
     }, { deep: true });
 
     watch(() => props.mapLayersB, () => {
       updateLayerVisibility('B');
+      updateLayerOrdering('B');
     }, { deep: true });
+
+    watch(() => props.layerOrder, () => {
+      updateLayerOrdering('A');
+      updateLayerOrdering('B');
+    });
 
     watch(() => props.mapStyleA, () => {
       mapA?.setStyle(props.mapStyleA);
