@@ -200,7 +200,7 @@ Compare the same map style with different layer visibility on each side.
 | `mapLayersA` | `string[]` | No | `[]` | Array of layer IDs to enable in map A. If empty, all layers are shown |
 | `mapLayersB` | `string[]` | No | `[]` | Array of layer IDs to enable in map B. If empty, all layers are shown |
 | `camera` | `{ center: [number, number], zoom: number, pitch: number, bearing: number}`| Yes | `{ center: [-74.5, 40], zoom: 9, pitch: 0, bearing: 0 }` | Camera Location/Orientation settings
-| `layerOrder` | `'ascending' or 'descending'` | No | `'ascending'` | Determines if the string arrays should be layered ascending with the first at the bottom or descending with the first at the top
+| `layerOrder` | `'topmost' or 'bottommost'` | No | `'topmost'` | Determines in what order layers should be rendered, topmost has the first layer as the highest in the stack, bottommost has the bottom layer as the highest in stack order
 | `headers` | `Record<string, string>` | No | `{}` | Headers to add to requests sent by the map |
 | `transformRequest` | `function` | No | `undefined` | Transform individual requests |
 | `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |

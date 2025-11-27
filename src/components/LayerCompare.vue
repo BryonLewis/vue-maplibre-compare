@@ -38,8 +38,8 @@ export default defineComponent({
       default: () => [],
     },
     layerOrder: {
-      type: String as PropType<'ascending' | 'descending'>,
-      default: 'ascending',
+      type: String as PropType<'topmost' | 'bottommost'>,
+      default: 'topmost',
     },
     camera: {
       type: Object as PropType<CameraData>,

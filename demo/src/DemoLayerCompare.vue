@@ -15,8 +15,8 @@ export default defineComponent({
       required: true,
     },
     layerOrder: {
-      type: String as PropType<'ascending' | 'descending'>,
-      default: 'ascending',
+      type: String as PropType<'topmost' | 'bottommost'>,
+      default: 'topmost',
     },
   },
   setup(props) {

@@ -65,8 +65,8 @@ export default defineComponent({
       default: () => ({ center: [0, 0], zoom: 1, bearing: 0, pitch: 0 }),
     },
     layerOrder: {
-      type: String as PropType<'ascending' | 'descending'>,
-      default: 'ascending',
+      type: String as PropType<'topmost' | 'bottommost'>,
+      default: 'topmost',
     },
     transformRequest: {
       type: Function as PropType<
@@ -159,7 +159,7 @@ export default defineComponent({
 
       // Reorder layers based on layerOrder prop
       const layersInStyle = map.getStyle().layers || [];
-      const orderedLayers = props.layerOrder === 'ascending'
+      const orderedLayers = props.layerOrder === 'topmost'
         ? enabledLayers
         : [...enabledLayers].reverse();
 

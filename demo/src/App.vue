@@ -16,7 +16,7 @@ export default defineComponent({
     const demoMode = ref<DemoMode>('map-compare')
     const showSwiperSettings = ref(false)
     const showLayerSettings = ref(false)
-    const layerOrder = ref<'ascending' | 'descending'>('ascending')
+    const layerOrder = ref<'topmost' | 'bottommost'>('topmost')
 
     // Swiper options with defaults
     const swiperOptions = ref<SwiperOptions>({
@@ -275,11 +275,11 @@ export default defineComponent({
           <div class="form-group">
             <label for="layer-order">Layer Order:</label>
             <select id="layer-order" v-model="layerOrder">
-              <option value="ascending">Ascending</option>
-              <option value="descending">Descending</option>
+              <option value="topmost">Topmost</option>
+              <option value="bottommost">Bottommost</option>
             </select>
             <p style="margin-top: 8px; font-size: 12px; color: #7f8c8d; line-height: 1.5;">
-              Controls the order in which layers are rendered. Ascending renders layers in their defined order, while descending reverses the order.
+              Controls the order in which layers are rendered. Topmost renders layers with the topmost layer first, while bottommost renders layers with the bottommost layer first.
             </p>
           </div>
         </div>
