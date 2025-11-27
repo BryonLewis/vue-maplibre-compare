@@ -4,9 +4,8 @@ import {
 } from 'vue';
 import { StyleSpecification, RequestParameters, ResourceType } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import type { SwiperOptions } from './MapCompare.vue';
+import type { SwiperOptions, CameraData } from './MapCompare.vue';
 import MapCompare from './MapCompare.vue';
-import { type CameraData } from './MapCompare.vue';
 
 export interface LayerCompareProps {
   mapStyle: string | StyleSpecification

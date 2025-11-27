@@ -62,7 +62,12 @@ export default defineComponent({
     },
     camera: {
       type: Object as PropType<CameraData>,
-      default: () => ({ center: [0, 0], zoom: 1, bearing: 0, pitch: 0 }),
+      default: () => ({
+        center: [0, 0],
+        zoom: 1,
+        bearing: 0,
+        pitch: 0,
+      }),
     },
     layerOrder: {
       type: String as PropType<'topmost' | 'bottommost'>,
