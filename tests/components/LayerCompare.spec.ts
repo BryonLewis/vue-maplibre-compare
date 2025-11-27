@@ -73,7 +73,7 @@ describe('LayerCompare', () => {
       },
     });
 
-    expect(wrapper.props('center')).toEqual([0, 0]);
+    expect(wrapper.props('camera')?.center).toEqual([0, 0]);
   });
 
   it('applies custom center prop', () => {
@@ -81,11 +81,13 @@ describe('LayerCompare', () => {
     const wrapper = mount(LayerCompare, {
       props: {
         mapStyle: mockStyle,
-        center,
+        camera: {
+          center, zoom: 1, bearing: 0, pitch: 0,
+        },
       },
     });
 
-    expect(wrapper.props('center')).toEqual(center);
+    expect(wrapper.props('camera')?.center).toEqual(center);
   });
 
   it('applies default zoom prop', () => {
@@ -95,18 +97,20 @@ describe('LayerCompare', () => {
       },
     });
 
-    expect(wrapper.props('zoom')).toBe(1);
+    expect(wrapper.props('camera')?.zoom).toBe(0);
   });
 
   it('applies custom zoom prop', () => {
     const wrapper = mount(LayerCompare, {
       props: {
         mapStyle: mockStyle,
-        zoom: 10,
+        camera: {
+          center: [0, 0], zoom: 10, bearing: 0, pitch: 0,
+        },
       },
     });
 
-    expect(wrapper.props('zoom')).toBe(10);
+    expect(wrapper.props('camera')?.zoom).toBe(10);
   });
 
   it('applies default swiper options', () => {
@@ -118,10 +122,10 @@ describe('LayerCompare', () => {
 
     const swiperOptions = wrapper.props('swiperOptions');
     expect(swiperOptions).toBeDefined();
-    expect(swiperOptions.thickness).toBe(4);
-    expect(swiperOptions.orientation).toBe('vertical');
-    expect(swiperOptions.grabThickness).toBe(20);
-    expect(swiperOptions.handleSize).toBe(40);
+    expect(swiperOptions?.thickness).toBe(4);
+    expect(swiperOptions?.orientation).toBe('vertical');
+    expect(swiperOptions?.grabThickness).toBe(20);
+    expect(swiperOptions?.handleSize).toBe(40);
   });
 
   it('applies custom swiper options', () => {
@@ -176,10 +180,12 @@ describe('LayerCompare', () => {
       mapStyle: mockStyle,
       mapLayersA: ['layer1'],
       mapLayersB: ['layer2'],
-      center: [-74.5, 40] as [number, number],
-      zoom: 10,
-      bearing: 45,
-      pitch: 30,
+      camera: {
+        center: [-74.5, 40] as [number, number],
+        zoom: 10,
+        bearing: 45,
+        pitch: 30,
+      },
       swiperOptions: {
         thickness: 5,
         orientation: 'horizontal' as const,
@@ -193,10 +199,12 @@ describe('LayerCompare', () => {
     expect(mapCompare.props('mapStyleB')).toEqual(props.mapStyle);
     expect(mapCompare.props('mapLayersA')).toEqual(props.mapLayersA);
     expect(mapCompare.props('mapLayersB')).toEqual(props.mapLayersB);
-    expect(mapCompare.props('center')).toEqual(props.center);
-    expect(mapCompare.props('zoom')).toBe(props.zoom);
-    expect(mapCompare.props('bearing')).toBe(props.bearing);
-    expect(mapCompare.props('pitch')).toBe(props.pitch);
+    expect(mapCompare.props('camera')).toEqual({
+      center: props.camera.center,
+      zoom: props.camera.zoom,
+      bearing: props.camera.bearing,
+      pitch: props.camera.pitch,
+    });
     expect(mapCompare.props('swiperOptions')).toEqual(props.swiperOptions);
   });
 });
