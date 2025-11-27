@@ -157,8 +157,20 @@ Compare two different map styles side-by-side.
 | `zoom` | `number` | No | `1` | Initial zoom level |
 | `bearing` | `number` | No | `0` | Initial bearing (rotation) in degrees |
 | `pitch` | `number` | No | `0` | Initial pitch (tilt) in degrees |
-| `headers` | `Record<string, any>` | No | `{}` | Headers to add to requests sent by the map
+| `transformRequest` | `function` **[Docs](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/RequestParameters/)** | No | `undefined` | transform invidual requests
+| `headers` | `Record<string, any>` | No | `{}` | Headers to add to requests sent by the map NOTE: this will add to every map request, use transformRequest for more control
 | `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
+
+**Emits:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `panend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes panning the map |
+| `zoomend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes zooming the map |
+| `pitchend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes changing the map pitch (tilt) |
+| `rotateend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes rotating the map |
+
+
 
 ### SwiperOptions Interface
 
@@ -196,7 +208,20 @@ Compare the same map style with different layer visibility on each side.
 | `zoom` | `number` | No | `1` | Initial zoom level |
 | `bearing` | `number` | No | `0` | Initial bearing (rotation) in degrees |
 | `pitch` | `number` | No | `0` | Initial pitch (tilt) in degrees |
+| `headers` | `Record<string, string>` | No | `{}` | Headers to add to requests sent by the map |
+| `transformRequest` | `function` | No | `undefined` | Transform individual requests |
 | `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
+
+**Emits:**
+
+The `LayerCompare` component emits the same events as `MapCompare`:
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `panend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes panning the map |
+| `zoomend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes zooming the map |
+| `pitchend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes changing the map pitch (tilt) |
+| `rotateend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes rotating the map |
 
 ## Development
 

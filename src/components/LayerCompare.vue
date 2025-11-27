@@ -2,7 +2,7 @@
 import {
   defineComponent, PropType,
 } from 'vue';
-import { StyleSpecification } from 'maplibre-gl';
+import { StyleSpecification, RequestParameters, ResourceType } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { SwiperOptions } from './MapCompare.vue';
 import MapCompare from './MapCompare.vue';
@@ -56,6 +56,12 @@ export default defineComponent({
       type: Object as PropType<Record<string, string>>,
       default: () => ({}),
     },
+    transformRequest: {
+      type: Function as PropType<
+      (url: string, resourceType?: ResourceType) => RequestParameters
+      >,
+      default: undefined,
+    },
     swiperOptions: {
       type: Object as PropType<SwiperOptions>,
       default: () => ({
@@ -70,8 +76,29 @@ export default defineComponent({
       }),
     },
   },
-  setup() {
+  emits: ['panend', 'zoomend', 'pitchend', 'rotateend'],
+  setup(_props, { emit }) {
+    const handlePanEnd = (event: any) => {
+      emit('panend', event);
+    };
+
+    const handleZoomEnd = (event: any) => {
+      emit('zoomend', event);
+    };
+
+    const handlePitchEnd = (event: any) => {
+      emit('pitchend', event);
+    };
+
+    const handleRotateEnd = (event: any) => {
+      emit('rotateend', event);
+    };
+
     return {
+      handlePanEnd,
+      handleZoomEnd,
+      handlePitchEnd,
+      handleRotateEnd,
     };
   },
 });
@@ -89,6 +116,11 @@ export default defineComponent({
     :bearing="bearing"
     :pitch="pitch"
     :headers="headers"
+    :transform-request="transformRequest"
+    @panend="handlePanEnd"
+    @zoomend="handleZoomEnd"
+    @pitchend="handlePitchEnd"
+    @rotateend="handleRotateEnd"
   />
 </template>
 
