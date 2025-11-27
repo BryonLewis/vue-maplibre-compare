@@ -65,7 +65,7 @@ describe('MapCompare', () => {
       },
     });
 
-    expect(wrapper.props('center')).toEqual([0, 0]);
+    expect(wrapper.props('camera')?.center).toEqual([0, 0]);
   });
 
   it('applies custom center prop', () => {
@@ -74,11 +74,13 @@ describe('MapCompare', () => {
       props: {
         mapStyleA: mockStyle,
         mapStyleB: mockStyle,
-        center,
+        camera: {
+          center, zoom: 1, bearing: 0, pitch: 0,
+        },
       },
     });
 
-    expect(wrapper.props('center')).toEqual(center);
+    expect(wrapper.props('camera')?.center).toEqual(center);
   });
 
   it('applies default zoom prop', () => {
@@ -89,7 +91,7 @@ describe('MapCompare', () => {
       },
     });
 
-    expect(wrapper.props('zoom')).toBe(1);
+    expect(wrapper.props('camera')?.zoom).toBe(1);
   });
 
   it('applies custom zoom prop', () => {
@@ -97,11 +99,13 @@ describe('MapCompare', () => {
       props: {
         mapStyleA: mockStyle,
         mapStyleB: mockStyle,
-        zoom: 10,
+        camera: {
+          center: [0, 0], zoom: 10, bearing: 0, pitch: 0,
+        },
       },
     });
 
-    expect(wrapper.props('zoom')).toBe(10);
+    expect(wrapper.props('camera')?.zoom).toBe(10);
   });
 
   it('applies default swiper options', () => {

@@ -15,6 +15,8 @@ export default defineComponent({
   setup() {
     const demoMode = ref<DemoMode>('map-compare')
     const showSwiperSettings = ref(false)
+    const showLayerSettings = ref(false)
+    const layerOrder = ref<'topmost' | 'bottommost'>('topmost')
 
     // Swiper options with defaults
     const swiperOptions = ref<SwiperOptions>({
@@ -70,6 +72,8 @@ export default defineComponent({
       swiperOptions,
       computedSwiperOptions,
       showSwiperSettings,
+      showLayerSettings,
+      layerOrder,
       getHexColor,
       updateColorFromPicker,
     }
@@ -96,18 +100,31 @@ export default defineComponent({
           Layer Compare
         </button>
       </div>
-      <button class="settings-button" @click="showSwiperSettings = true">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
-        </svg>
-        Swiper Settings
-      </button>
+      <div class="settings-buttons">
+        <button 
+          v-if="demoMode === 'layer-compare'"
+          class="settings-button" 
+          @click="showLayerSettings = true"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m9-9h-6m-6 0H3"></path>
+          </svg>
+          Layer Settings
+        </button>
+        <button class="settings-button" @click="showSwiperSettings = true">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"></path>
+          </svg>
+          Swiper Settings
+        </button>
+      </div>
     </div>
 
     <div class="demo-content">
       <DemoMapCompare v-if="demoMode === 'map-compare'" :swiperOptions="computedSwiperOptions" />
-      <DemoLayerCompare v-else-if="demoMode === 'layer-compare'" :swiperOptions="computedSwiperOptions" />
+      <DemoLayerCompare v-else-if="demoMode === 'layer-compare'" :swiperOptions="computedSwiperOptions" :layerOrder="layerOrder" />
     </div>
 
     <!-- Swiper Settings Modal -->
@@ -241,6 +258,36 @@ export default defineComponent({
         </div>
       </div>
     </div>
+
+    <!-- Layer Settings Modal -->
+    <div v-if="showLayerSettings" class="modal-overlay" @click.self="showLayerSettings = false">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Layer Compare Settings</h2>
+          <button class="close-button" @click="showLayerSettings = false">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="layer-order">Layer Order:</label>
+            <select id="layer-order" v-model="layerOrder">
+              <option value="topmost">Topmost</option>
+              <option value="bottommost">Bottommost</option>
+            </select>
+            <p style="margin-top: 8px; font-size: 12px; color: #7f8c8d; line-height: 1.5;">
+              Controls the order in which layers are rendered. Topmost renders layers with the topmost layer first, while bottommost renders layers with the bottommost layer first.
+            </p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="close-button-primary" @click="showLayerSettings = false">Close</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -327,6 +374,11 @@ body,
   background: #2980b9;
 }
 
+.settings-buttons {
+  display: flex;
+  border-left: 1px solid #2c3e50;
+}
+
 .settings-button {
   display: flex;
   align-items: center;
@@ -335,11 +387,15 @@ body,
   background: #27ae60;
   color: white;
   border: none;
-  border-left: 1px solid #2c3e50;
+  border-right: 1px solid #2c3e50;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
+}
+
+.settings-button:last-child {
+  border-right: none;
 }
 
 .settings-button:hover {

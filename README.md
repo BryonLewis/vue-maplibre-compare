@@ -52,8 +52,7 @@ app.mount('#app')
       :mapStyleB="styleB"
       :mapLayersA="layersA"
       :mapLayersB="layersB"
-      :center="[-74.5, 40]"
-      :zoom="9"
+      :camera="{ center: [-74.5, 40], zoom: 9 }"
     />
   </div>
 </template>
@@ -110,8 +109,7 @@ const redStyle: StyleSpecification = {
   <MapCompare
     :mapStyleA="blueStyle"
     :mapStyleB="redStyle"
-    :center="[0, 0]"
-    :zoom="2"
+    :camera="{ center: [-74.5, 40], zoom: 9 }"
   />
 </template>
 ```
@@ -153,10 +151,7 @@ Compare two different map styles side-by-side.
 | `mapStyleB` | `string \| StyleSpecification` | Yes | - | MapLibre style for right/second map |
 | `mapLayersA` | `string[]` | No | `[]` | Array of layer IDs to enable in map A. If empty, all layers are shown |
 | `mapLayersB` | `string[]` | No | `[]` | Array of layer IDs to enable in map B. If empty, all layers are shown |
-| `center` | `[number, number]` | No | `[0, 0]` | Initial map center coordinates [lng, lat] |
-| `zoom` | `number` | No | `1` | Initial zoom level |
-| `bearing` | `number` | No | `0` | Initial bearing (rotation) in degrees |
-| `pitch` | `number` | No | `0` | Initial pitch (tilt) in degrees |
+| `camera` | `{ center: [number, number], zoom: number, pitch: number, bearing: number}`| Yes | `{ center: [-74.5, 40], zoom: 9, pitch: 0, bearing: 0 }` | Camera Location/Orientation settings
 | `transformRequest` | `function` **[Docs](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/RequestParameters/)** | No | `undefined` | transform invidual requests
 | `headers` | `Record<string, any>` | No | `{}` | Headers to add to requests sent by the map NOTE: this will add to every map request, use transformRequest for more control
 | `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
@@ -204,10 +199,8 @@ Compare the same map style with different layer visibility on each side.
 | `mapStyle` | `string \| StyleSpecification` | Yes | - | MapLibre style for both maps |
 | `mapLayersA` | `string[]` | No | `[]` | Array of layer IDs to enable in map A. If empty, all layers are shown |
 | `mapLayersB` | `string[]` | No | `[]` | Array of layer IDs to enable in map B. If empty, all layers are shown |
-| `center` | `[number, number]` | No | `[0, 0]` | Initial map center coordinates [lng, lat] |
-| `zoom` | `number` | No | `1` | Initial zoom level |
-| `bearing` | `number` | No | `0` | Initial bearing (rotation) in degrees |
-| `pitch` | `number` | No | `0` | Initial pitch (tilt) in degrees |
+| `camera` | `{ center: [number, number], zoom: number, pitch: number, bearing: number}`| Yes | `{ center: [-74.5, 40], zoom: 9, pitch: 0, bearing: 0 }` | Camera Location/Orientation settings
+| `layerOrder` | `'topmost' or 'bottommost'` | No | `'topmost'` | Determines in what order layers should be rendered, topmost has the first layer as the highest in the stack, bottommost has the bottom layer as the highest in stack order
 | `headers` | `Record<string, string>` | No | `{}` | Headers to add to requests sent by the map |
 | `transformRequest` | `function` | No | `undefined` | Transform individual requests |
 | `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |

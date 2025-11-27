@@ -13,6 +13,7 @@ vi.mock('maplibre-gl', () => {
         { id: 'layer2', type: 'line' },
       ],
     })),
+    moveLayer: vi.fn(),
     setLayoutProperty: vi.fn(),
     setStyle: vi.fn(),
     resize: vi.fn(),
