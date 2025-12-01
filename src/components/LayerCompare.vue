@@ -25,7 +25,7 @@ export default defineComponent({
   },
   props: {
     mapStyle: {
-      type: [String, Object] as PropType<string | StyleSpecification>,
+      type: [String, Object] as PropType<StyleSpecification>,
       required: true,
     },
     mapLayersA: {

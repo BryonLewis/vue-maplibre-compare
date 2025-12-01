@@ -6,6 +6,7 @@ import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Protocol } from 'pmtiles';
 import { useMapCompare } from '../use/useMapCompare';
+import { useStyleCompare } from '../use/useStyleCompare';
 
 const protocol = new Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
@@ -45,11 +46,11 @@ export default defineComponent({
   name: 'MapCompare',
   props: {
     mapStyleA: {
-      type: [String, Object] as PropType<string | StyleSpecification>,
+      type: [String, Object] as PropType<StyleSpecification>,
       required: true,
     },
     mapStyleB: {
-      type: [String, Object] as PropType<string | StyleSpecification>,
+      type: [String, Object] as PropType<StyleSpecification>,
       required: true,
     },
     mapLayersA: {
@@ -104,6 +105,7 @@ export default defineComponent({
     const mapARef = ref<HTMLElement>();
     const mapBRef = ref<HTMLElement>();
     const swiperRef = ref<HTMLElement | null>(null);
+    let styleCompare: ReturnType<typeof useStyleCompare> | null = null;
 
     let mapA: MaplibreMap | null = null;
     let mapB: MaplibreMap | null = null;
@@ -287,6 +289,16 @@ export default defineComponent({
       updateLayerVisibility('B');
       updateLayerOrdering('B');
 
+      // Initialized useStyleCompare for adding/removing and modification of alyers
+      styleCompare = useStyleCompare(
+        {
+          mapA,
+          mapB,
+          baseStyleA: mapA.getStyle(),
+          baseStyleB: mapB.getStyle(),
+        },
+      );
+
       // Set up event listeners to re-enforce position after resize events
       // MapLibre may reset position to relative during resize operations
       mapAResizeHandler = () => {
@@ -357,11 +369,19 @@ export default defineComponent({
     });
 
     watch(() => props.mapStyleA, () => {
-      mapA?.setStyle(props.mapStyleA);
+      if (styleCompare) {
+        styleCompare.updateStyle('A', props.mapStyleA);
+      }
+      updateLayerVisibility('A');
+      updateLayerOrdering('A');
     }, { deep: true });
 
     watch(() => props.mapStyleB, () => {
-      mapB?.setStyle(props.mapStyleB);
+      if (styleCompare) {
+        styleCompare.updateStyle('B', props.mapStyleB);
+      }
+      updateLayerVisibility('B');
+      updateLayerOrdering('B');
     }, { deep: true });
 
     // Watch for swiper orientation changes and reinitialize
