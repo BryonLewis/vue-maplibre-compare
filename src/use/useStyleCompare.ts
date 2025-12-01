@@ -14,12 +14,10 @@ export function useStyleCompare(options: StyleCompareOptions) {
   } = options;
 
   // Store current styles
-  const currentStyleA = baseStyleA;
-  const currentStyleB = baseStyleB;
-
+  let currentStyleA = baseStyleA;
+  let currentStyleB = baseStyleB;
   function updateStyle(targetMap: 'A' | 'B', newStyle: StyleSpecification) {
     const currentStyle = targetMap === 'A' ? currentStyleA : currentStyleB;
-
     // Check the sources and layers for the new map
     const currentSourceKeys = new Set(Object.keys(currentStyle.sources || {}));
     const newSourceKeys = new Set(Object.keys(newStyle.sources || {}));
@@ -58,7 +56,6 @@ export function useStyleCompare(options: StyleCompareOptions) {
     // Get new and removed layers
     const layersToAdd = Array.from(newLayerIds).filter((id) => !currentLayerIds.has(id));
     const layersToRemove = Array.from(currentLayerIds).filter((id) => !newLayerIds.has(id));
-
     // Remove layers
     layersToRemove.forEach((layerId) => {
       if (targetMapInstance.getLayer(layerId)) {
@@ -93,6 +90,11 @@ export function useStyleCompare(options: StyleCompareOptions) {
         }
       }
     });
+    if (targetMap === 'A') {
+      currentStyleA = newStyle;
+    } else {
+      currentStyleB = newStyle;
+    }
   }
   return {
     updateStyle,
