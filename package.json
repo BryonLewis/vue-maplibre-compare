@@ -1,6 +1,6 @@
 {
   "name": "vue-maplibre-compare",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A Vue 3 component for comparing MapLibre maps side-by-side with a slider",
   "type": "module",
   "main": "./dist/vue-maplibre-compare.umd.js",
