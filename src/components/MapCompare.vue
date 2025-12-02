@@ -99,12 +99,13 @@ export default defineComponent({
       }),
     },
   },
-  emits: ['panend', 'zoomend', 'pitchend', 'rotateend'],
+  emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete'],
   setup(props, { slots, emit }) {
     const containerRef = ref<HTMLElement>();
     const mapARef = ref<HTMLElement>();
     const mapBRef = ref<HTMLElement>();
     const swiperRef = ref<HTMLElement | null>(null);
+    const isLoading = ref(true);
     let styleCompare: ReturnType<typeof useStyleCompare> | null = null;
 
     let mapA: MaplibreMap | null = null;
@@ -289,6 +290,10 @@ export default defineComponent({
       updateLayerVisibility('B');
       updateLayerOrdering('B');
 
+      // Mark loading as complete and emit event
+      isLoading.value = false;
+      emit('loading-complete');
+
       // Initialized useStyleCompare for adding/removing and modification of alyers
       styleCompare = useStyleCompare(
         {
@@ -464,6 +469,9 @@ export default defineComponent({
         handleColor: baseHandleColor,
         handleShadowColor: baseColorMode.handleShadowColor,
         arrowColor: baseArrowColor,
+        loadingTextColor: darkMode ? '#fff' : '#333',
+        loadingSpinnerColor: darkMode ? '#fff' : '#333',
+        loadingSpinnerBgColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
       };
     });
 
@@ -474,6 +482,7 @@ export default defineComponent({
       swiperRef,
       hasIconSlot: !!slots.icon,
       swiperOpts,
+      isLoading,
     };
   },
 });
@@ -491,6 +500,9 @@ export default defineComponent({
       '--swiper-handle-color': swiperOpts.handleColor,
       '--swiper-handle-shadow-color': swiperOpts.handleShadowColor,
       '--swiper-arrow-color': swiperOpts.arrowColor,
+      '--loading-text-color': swiperOpts.loadingTextColor,
+      '--loading-spinner-color': swiperOpts.loadingSpinnerColor,
+      '--loading-spinner-bg-color': swiperOpts.loadingSpinnerBgColor,
     }"
   >
     <div
@@ -520,6 +532,10 @@ export default defineComponent({
         <slot name="icon" />
       </div>
     </Teleport>
+    <div v-if="isLoading" class="loading-indicator">
+      <div class="spinner"></div>
+      <div class="loading-text">Loading maps...</div>
+    </div>
   </div>
 </template>
 
@@ -562,6 +578,43 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Loading Indicator */
+.loading-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  pointer-events: none;
+}
+
+.loading-text {
+  color: var(--loading-text-color, #333);
+  font-size: 16px;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--loading-spinner-bg-color, rgba(0, 0, 0, 0.1));
+  border-top-color: var(--loading-spinner-color, #333);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
 
