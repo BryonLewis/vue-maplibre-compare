@@ -2,15 +2,17 @@
 import { defineComponent, ref, computed } from 'vue'
 import DemoMapCompare from './DemoMapCompare.vue'
 import DemoLayerCompare from './DemoLayerCompare.vue'
+import DemoTileUrlTest from './DemoTileUrlTest.vue'
 import type { SwiperOptions } from '../../src/components/MapCompare.vue'
 
-type DemoMode = 'map-compare' | 'layer-compare'
+type DemoMode = 'map-compare' | 'layer-compare' | 'tile-url-test'
 
 export default defineComponent({
   name: 'App',
   components: {
     DemoMapCompare,
-    DemoLayerCompare
+    DemoLayerCompare,
+    DemoTileUrlTest
   },
   setup() {
     const demoMode = ref<DemoMode>('map-compare')
@@ -99,6 +101,13 @@ export default defineComponent({
         >
           Layer Compare
         </button>
+        <button
+          class="selector-button"
+          :class="{ active: demoMode === 'tile-url-test' }"
+          @click="demoMode = 'tile-url-test'"
+        >
+          Tile URL Test
+        </button>
       </div>
       <div class="settings-buttons">
         <button 
@@ -125,6 +134,7 @@ export default defineComponent({
     <div class="demo-content">
       <DemoMapCompare v-if="demoMode === 'map-compare'" :swiperOptions="computedSwiperOptions" />
       <DemoLayerCompare v-else-if="demoMode === 'layer-compare'" :swiperOptions="computedSwiperOptions" :layerOrder="layerOrder" />
+      <DemoTileUrlTest v-else-if="demoMode === 'tile-url-test'" :swiperOptions="computedSwiperOptions" />
     </div>
 
     <!-- Swiper Settings Modal -->

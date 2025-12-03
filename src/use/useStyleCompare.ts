@@ -1,5 +1,6 @@
 /* eslint-disable max-len */
-import { Map, StyleSpecification } from 'maplibre-gl';
+import { Map, RasterTileSource, StyleSpecification } from 'maplibre-gl';
+import { cloneDeep } from 'lodash';
 
 interface StyleCompareOptions {
   mapA: Map;
@@ -49,6 +50,28 @@ export function useStyleCompare(options: StyleCompareOptions) {
         targetMapInstance.addSource(sourceId, sourceDef);
       }
     });
+    // Check tileUrls to see if they are different for existing raster sources
+    // Only check sources that already exist (not new ones being added)
+    const existingSourceKeys = Array.from(newSourceKeys).filter((key) => currentSourceKeys.has(key));
+    existingSourceKeys.forEach((sourceKey) => {
+      const newSource = newStyle.sources?.[sourceKey];
+      const currentSource = currentStyle.sources?.[sourceKey];
+
+      // Check if both are raster sources with url property
+      if (newSource?.type === 'raster' && currentSource?.type === 'raster') {
+        const newUrls = (newSource as any).tiles;
+        const currentUrls = (currentSource as any).tiles;
+
+        // determine if the tiles have changed
+        const tilesHaveChanged = newUrls.length !== currentUrls.length || newUrls.filter((url: string, index: number) => url !== currentUrls[index]).length > 0;
+        if (tilesHaveChanged) {
+          const sourceToUpdate = targetMapInstance.getSource(sourceKey);
+          if (sourceToUpdate && sourceToUpdate.type === 'raster') {
+            (sourceToUpdate as RasterTileSource).setTiles(newUrls);
+          }
+        }
+      }
+    });
 
     // Now update layers
     const currentLayerIds = new Set((currentStyle.layers || []).map((layer) => layer.id));
@@ -91,9 +114,9 @@ export function useStyleCompare(options: StyleCompareOptions) {
       }
     });
     if (targetMap === 'A') {
-      currentStyleA = newStyle;
+      currentStyleA = cloneDeep(newStyle);
     } else {
-      currentStyleB = newStyle;
+      currentStyleB = cloneDeep(newStyle);
     }
   }
   return {
