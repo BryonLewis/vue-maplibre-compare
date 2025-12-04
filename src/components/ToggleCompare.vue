@@ -1,5 +1,3 @@
-<!-- eslint-disable max-len -->
-<!-- eslint-disable max-len -->
 <script lang="ts">
 import {
   defineComponent, ref, onMounted, onBeforeUnmount, watch, PropType, computed, nextTick,
@@ -9,8 +7,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { Protocol } from 'pmtiles';
 import { useMapCompare } from '../use/useMapCompare';
 import { useStyleCompare } from '../use/useStyleCompare';
-import type { SwiperOptions } from './MapCompare.vue';
-import type { CameraData } from './MapCompare.vue';
+import type { SwiperOptions, CameraData } from './MapCompare.vue';
 
 const protocol = new Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
@@ -22,37 +19,40 @@ export interface ToggleCompareProps {
   mapLayersB?: string[]
   camera?: CameraData
   layerOrder?: 'topmost' | 'bottommost'
-  transformRequest?: (url: string, resourceType?: maplibregl.ResourceType) => maplibregl.RequestParameters
+  transformRequest?: (
+    url: string,
+    resourceType?: maplibregl.ResourceType,
+  ) => maplibregl.RequestParameters,
   headers?: Record<string, string>
   swiperOptions?: SwiperOptions
   compareEnabled?: boolean
 }
 
 const openStreetMapStyle: StyleSpecification = {
-      version: 8,
-      name: 'Open Street Map',
-      sources: {
-        osm: {
-          type: 'raster',
-          tiles: [
-            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          ],
-          tileSize: 256,
-          attribution: '© OpenStreetMap contributors',
-        },
-      },
-      layers: [
-        {
-          id: 'osm-tiles',
-          type: 'raster',
-          source: 'osm',
-          minzoom: 0,
-          maxzoom: 19,
-        },
-      ]
-    }
+  version: 8,
+  name: 'Open Street Map',
+  sources: {
+    osm: {
+      type: 'raster',
+      tiles: [
+        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors',
+    },
+  },
+  layers: [
+    {
+      id: 'osm-tiles',
+      type: 'raster',
+      source: 'osm',
+      minzoom: 0,
+      maxzoom: 19,
+    },
+  ],
+};
 
 export default defineComponent({
   name: 'ToggleCompare',
@@ -578,7 +578,8 @@ export default defineComponent({
     class="map-compare-container"
     :style="{
       '--swiper-thickness': `${swiperOptions.thickness}px`,
-      '--swiper-grab-thickness': `${Math.max(swiperOptions.grabThickness, swiperOptions.thickness)}px`,
+      '--swiper-grab-thickness':
+        `${Math.max(swiperOptions.grabThickness, swiperOptions.thickness)}px`,
       '--swiper-handle-size': `${swiperOptions.handleSize}px`,
       '--swiper-line-color': swiperOptions.lineColor,
       '--swiper-handle-color': swiperOptions.handleColor,
@@ -618,8 +619,10 @@ export default defineComponent({
       </div>
     </Teleport>
     <div v-if="isLoading" class="loading-indicator">
-      <div class="spinner"></div>
-      <div class="loading-text">Loading maps...</div>
+      <div class="spinner" />
+      <div class="loading-text">
+        Loading maps...
+      </div>
     </div>
   </div>
 </template>
@@ -821,4 +824,3 @@ export default defineComponent({
   font-family: Arial, sans-serif;
 }
 </style>
-

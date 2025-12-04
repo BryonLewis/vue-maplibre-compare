@@ -533,8 +533,10 @@ export default defineComponent({
       </div>
     </Teleport>
     <div v-if="isLoading" class="loading-indicator">
-      <div class="spinner"></div>
-      <div class="loading-text">Loading maps...</div>
+      <div class="spinner" />
+      <div class="loading-text">
+        Loading maps...
+      </div>
     </div>
   </div>
 </template>
