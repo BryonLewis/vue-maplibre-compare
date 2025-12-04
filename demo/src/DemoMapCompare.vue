@@ -73,16 +73,12 @@ export default defineComponent({
       sources: {
         'ny-imagery': {
           type: 'raster',
-          // tiles: [
-          //   // eslint-disable-next-line vue/max-len
-          //   //'https://gis.apfo.usda.gov/arcgis/rest/services/NAIP/USDA_CONUS_PRIME/ImageServer/tile/{z}/{y}/{x}?blankTile=false',
-          // ],
           tiles: [
             "https://orthos.its.ny.gov/arcgis/services/wms/Latest/MapServer/WmsServer?" +
             "service=WMS&" +
             "request=GetMap&" +
             "version=1.3.0&" +
-            "layers=0,1,2,3,4&" +                // <-- choose 2025 imagery (layer 4)
+            "layers=0,1,2,3,4&" +
             "styles=&" +
             "format=image/png&" +
             "transparent=true&" +
