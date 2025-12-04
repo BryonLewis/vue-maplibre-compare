@@ -66,9 +66,46 @@ export default defineComponent({
       ]
     }
 
+
+    const nyImagery: StyleSpecification = {
+      version: 8,
+      name: 'NY Imagery',
+      sources: {
+        'ny-imagery': {
+          type: 'raster',
+          // tiles: [
+          //   // eslint-disable-next-line vue/max-len
+          //   //'https://gis.apfo.usda.gov/arcgis/rest/services/NAIP/USDA_CONUS_PRIME/ImageServer/tile/{z}/{y}/{x}?blankTile=false',
+          // ],
+          tiles: [
+            "https://orthos.its.ny.gov/arcgis/services/wms/Latest/MapServer/WmsServer?" +
+            "service=WMS&" +
+            "request=GetMap&" +
+            "version=1.3.0&" +
+            "layers=0,1,2,3,4&" +                // <-- choose 2025 imagery (layer 4)
+            "styles=&" +
+            "format=image/png&" +
+            "transparent=true&" +
+            "width=256&height=256&" +
+            "crs=EPSG:3857&" +
+            "bbox={bbox-epsg-3857}"
+          ],
+
+          tileSize: 256,
+        },
+      },
+      layers: [
+        {
+          id: 'ny-imagery-tiles',
+          type: 'raster',
+          source: 'ny-imagery',
+        },
+      ]
+    }
     const availableStyles = [
       openStreetMapStyle,
-      naipStyle
+      naipStyle,
+      nyImagery
     ]
 
     const selectedStyleIndexA = ref(0)
@@ -96,7 +133,8 @@ export default defineComponent({
         <h3>Map A Style</h3>
         <select v-model="selectedStyleIndexA">
           <option :value="0">OpenStreetMap Style</option>
-          <option :value="1">NAIP Imagery</option>
+          <option :value="1">NY Imagery</option>
+          <option :value="2">NY Imagery</option>
         </select>
       </div>
 
@@ -105,6 +143,7 @@ export default defineComponent({
         <select v-model="selectedStyleIndexB">
           <option :value="0">OpenStreetMap Style</option>
           <option :value="1">NAIP Imagery</option>
+          <option :value="2">NY Imagery</option>
         </select>
       </div>
 
@@ -116,14 +155,9 @@ export default defineComponent({
     </div>
 
     <div class="map-container">
-      <MapCompare
-        :mapStyleA="availableStyles[selectedStyleIndexA]"
-        :mapStyleB="availableStyles[selectedStyleIndexB]"
-        :mapLayersA="selectedLayersA"
-        :mapLayersB="selectedLayersB"
-        :camera="{center: [-74.1847, 43.1339], zoom: 9, bearing: 0, pitch: 0}"
-        :swiperOptions="swiperOptions"
-      />
+      <MapCompare :mapStyleA="availableStyles[selectedStyleIndexA]" :mapStyleB="availableStyles[selectedStyleIndexB]"
+        :mapLayersA="selectedLayersA" :mapLayersB="selectedLayersB"
+        :camera="{ center: [-74.1847, 43.1339], zoom: 9, bearing: 0, pitch: 0 }" :swiperOptions="swiperOptions" />
     </div>
   </div>
 </template>
@@ -187,4 +221,3 @@ export default defineComponent({
   min-height: 500px;
 }
 </style>
-
