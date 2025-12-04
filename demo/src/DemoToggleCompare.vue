@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, ref, PropType, onMounted } from 'vue'
+import { defineComponent, ref, PropType, onMounted, watch } from 'vue'
 import { ToggleCompare } from '../../src/index'
 import type { StyleSpecification } from 'maplibre-gl'
 import type { SwiperOptions } from '../../src/components/MapCompare.vue'
@@ -116,36 +116,24 @@ export default defineComponent({
     const selectedLayersB = ref<string[]>([])
 
     const handleMapReady = (map: MaplibreMap) => {
-      mapAInstance.value = map
-      console.log('Map A is ready!', map)
+      mapAInstance.value = map;
+      mapAInstance.value.setStyle(availableStyles[selectedStyleIndexA.value]);
     }
 
     const handleToggleCompare = () => {
       compareEnabled.value = !compareEnabled.value
     }
 
-    const addMarker = () => {
-      if (mapAInstance.value) {
-        // Example: Add a marker to the map
-        const center = mapAInstance.value.getCenter()
-        console.log('Current center:', center.toArray())
-        // You could add a marker here using maplibre-gl markers or custom HTML
-      }
-    }
-
-    const flyToLocation = () => {
-      if (mapAInstance.value) {
-        mapAInstance.value.flyTo({
-          center: [-74.1847, 43.1339],
-          zoom: 12,
-          duration: 2000
-        })
-      }
-    }
-
     onMounted(() => {
       // Access the map instance after component is mounted
       // The map-ready event will fire when the map is initialized
+    })
+
+    watch(selectedStyleIndexA, (newIndex) => {
+      if (mapAInstance.value) {
+        const newStyle = availableStyles[newIndex];
+        mapAInstance.value.setStyle(newStyle);
+      }
     })
 
     return {
@@ -159,8 +147,6 @@ export default defineComponent({
       selectedLayersB,
       handleMapReady,
       handleToggleCompare,
-      addMarker,
-      flyToLocation,
     }
   }
 })
@@ -213,12 +199,6 @@ export default defineComponent({
     </div>
 
     <div class="map-actions">
-      <button class="action-button" @click="addMarker" :disabled="!mapAInstance">
-        Log Map Center
-      </button>
-      <button class="action-button" @click="flyToLocation" :disabled="!mapAInstance">
-        Fly to NY Location
-      </button>
       <div class="map-status">
         <span v-if="mapAInstance" class="status-indicator status-active">Map Ready</span>
         <span v-else class="status-indicator status-loading">Loading Map...</span>
@@ -228,7 +208,6 @@ export default defineComponent({
     <div class="map-container">
       <ToggleCompare 
         ref="toggleCompareRef"
-        :mapStyleA="availableStyles[selectedStyleIndexA]" 
         :mapStyleB="compareEnabled ? availableStyles[selectedStyleIndexB] : undefined"
         :mapLayersA="selectedLayersA" 
         :mapLayersB="selectedLayersB"

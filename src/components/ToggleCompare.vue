@@ -1,3 +1,5 @@
+<!-- eslint-disable max-len -->
+<!-- eslint-disable max-len -->
 <script lang="ts">
 import {
   defineComponent, ref, onMounted, onBeforeUnmount, watch, PropType, computed, nextTick,
@@ -26,12 +28,39 @@ export interface ToggleCompareProps {
   compareEnabled?: boolean
 }
 
+const openStreetMapStyle: StyleSpecification = {
+      version: 8,
+      name: 'Open Street Map',
+      sources: {
+        osm: {
+          type: 'raster',
+          tiles: [
+            'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          ],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors',
+        },
+      },
+      layers: [
+        {
+          id: 'osm-tiles',
+          type: 'raster',
+          source: 'osm',
+          minzoom: 0,
+          maxzoom: 19,
+        },
+      ]
+    }
+
 export default defineComponent({
   name: 'ToggleCompare',
   props: {
     mapStyleA: {
-      type: [String, Object] as PropType<StyleSpecification>,
-      required: true,
+      type: [String, Object] as PropType<StyleSpecification | undefined>,
+      required: false,
+      default: openStreetMapStyle,
     },
     compareEnabled: {
       type: Boolean,
@@ -174,13 +203,11 @@ export default defineComponent({
 
     const initializeSwiper = () => {
       if (!mapA || !mapB || !containerRef.value || !props.compareEnabled) return;
-
       // Unmount existing swiper if it exists
       if (mapCompareInstance) {
         mapCompareInstance.unmount();
         mapCompareInstance = null;
       }
-
       // Initialize map compare with current orientation
       mapCompareInstance = useMapCompare(mapA, mapB, containerRef.value, {
         orientation: props.swiperOptions?.orientation ?? 'vertical',
@@ -209,6 +236,7 @@ export default defineComponent({
         mapCompareInstance = null;
       }
       swiperRef.value = null;
+      styleCompare = null;
 
       if (mapB) {
         if (mapBResizeHandler) {
@@ -323,7 +351,6 @@ export default defineComponent({
 
     const initializeMapB = async () => {
       if (!mapBRef.value || !mapA || !props.mapStyleB) return;
-
       // Initialize Map B
       mapB = new maplibregl.Map({
         container: mapBRef.value,
@@ -431,7 +458,7 @@ export default defineComponent({
     }, { deep: true });
 
     watch(() => props.mapStyleB, () => {
-      if (styleCompare && props.compareEnabled && mapB) {
+      if (styleCompare && props.compareEnabled && mapB && props.mapStyleB) {
         styleCompare.updateStyle('B', props.mapStyleB);
       }
       if (props.compareEnabled && mapB) {
@@ -540,7 +567,6 @@ export default defineComponent({
       hasIconSlot: !!slots.icon,
       swiperOpts,
       isLoading,
-      compareEnabled: computed(() => props.compareEnabled),
     };
   },
 });
@@ -575,7 +601,7 @@ export default defineComponent({
       }"
     />
     <div
-      v-if="compareEnabled"
+      v-show="compareEnabled"
       ref="mapBRef"
       class="map map-b"
       :style="{
