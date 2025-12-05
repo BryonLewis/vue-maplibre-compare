@@ -1,6 +1,14 @@
 <script lang="ts">
 import {
-  defineComponent, ref, onMounted, onBeforeUnmount, watch, PropType, computed, nextTick, defineExpose,
+  defineComponent,
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  PropType,
+  computed,
+  nextTick,
+  defineExpose,
 } from 'vue';
 import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
