@@ -28,6 +28,7 @@ export function useStyleCompare(options: StyleCompareOptions) {
 
     // Update sources
     const targetMapInstance = targetMap === 'A' ? mapA : mapB;
+    if (!targetMapInstance) return;
 
     // first need to remove layers that use removed sources
     (currentStyle.layers || []).forEach((layer) => {
@@ -93,7 +94,7 @@ export function useStyleCompare(options: StyleCompareOptions) {
     });
     // Now we need to check for layers that exist in both styles and update their properties if they changed
     (newStyle.layers || []).forEach((newLayer) => {
-      if (currentLayerIds.has(newLayer.id)) {
+      if (currentLayerIds.has(newLayer.id) && targetMapInstance) {
         const currentLayer = targetMapInstance.getLayer(newLayer.id);
         if (currentLayer) {
           // Compare and update paint properties

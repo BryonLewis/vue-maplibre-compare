@@ -3,16 +3,18 @@ import { defineComponent, ref, computed } from 'vue'
 import DemoMapCompare from './DemoMapCompare.vue'
 import DemoLayerCompare from './DemoLayerCompare.vue'
 import DemoTileUrlTest from './DemoTileUrlTest.vue'
+import DemoToggleCompare from './DemoToggleCompare.vue'
 import type { SwiperOptions } from '../../src/components/MapCompare.vue'
 
-type DemoMode = 'map-compare' | 'layer-compare' | 'tile-url-test'
+type DemoMode = 'map-compare' | 'layer-compare' | 'tile-url-test' | 'toggle-compare'
 
 export default defineComponent({
   name: 'App',
   components: {
     DemoMapCompare,
     DemoLayerCompare,
-    DemoTileUrlTest
+    DemoTileUrlTest,
+    DemoToggleCompare
   },
   setup() {
     const demoMode = ref<DemoMode>('map-compare')
@@ -108,6 +110,13 @@ export default defineComponent({
         >
           Tile URL Test
         </button>
+        <button
+          class="selector-button"
+          :class="{ active: demoMode === 'toggle-compare' }"
+          @click="demoMode = 'toggle-compare'"
+        >
+          Toggle Compare
+        </button>
       </div>
       <div class="settings-buttons">
         <button 
@@ -135,6 +144,7 @@ export default defineComponent({
       <DemoMapCompare v-if="demoMode === 'map-compare'" :swiperOptions="computedSwiperOptions" />
       <DemoLayerCompare v-else-if="demoMode === 'layer-compare'" :swiperOptions="computedSwiperOptions" :layerOrder="layerOrder" />
       <DemoTileUrlTest v-else-if="demoMode === 'tile-url-test'" :swiperOptions="computedSwiperOptions" />
+      <DemoToggleCompare v-else-if="demoMode === 'toggle-compare'" :swiperOptions="computedSwiperOptions" />
     </div>
 
     <!-- Swiper Settings Modal -->

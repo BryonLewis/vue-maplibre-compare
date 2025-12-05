@@ -1,57 +1,82 @@
 <script lang="ts">
 import {
-  defineComponent, ref, onMounted, onBeforeUnmount, watch, PropType, computed, nextTick,
+  defineComponent,
+  ref,
+  onMounted,
+  onBeforeUnmount,
+  watch,
+  PropType,
+  computed,
+  nextTick,
+  defineExpose,
 } from 'vue';
 import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Protocol } from 'pmtiles';
 import { useMapCompare } from '../use/useMapCompare';
 import { useStyleCompare } from '../use/useStyleCompare';
+import type { SwiperOptions, CameraData } from './MapCompare.vue';
 
 const protocol = new Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);
 
-export interface SwiperOptions {
-  thickness?: number
-  orientation: 'vertical' | 'horizontal';
-  grabThickness?: number
-  handleSize?: number
-  lineColor?: string
-  handleColor?: string
-  handleShadowColor?: string
-  arrowColor?: string
-  darkMode?: boolean
-}
-
-export interface MapCompareProps {
+export interface ToggleCompareProps {
   mapStyleA: string | StyleSpecification
-  mapStyleB: string | StyleSpecification
+  mapStyleB?: string | StyleSpecification
   mapLayersA?: string[]
   mapLayersB?: string[]
-  center?: [number, number]
-  zoom?: number
-  bearing?: number
-  pitch?: number
+  camera?: CameraData
+  layerOrder?: 'topmost' | 'bottommost'
+  transformRequest?: (
+    url: string,
+    resourceType?: maplibregl.ResourceType,
+  ) => maplibregl.RequestParameters,
+  headers?: Record<string, string>
   swiperOptions?: SwiperOptions
+  compareEnabled?: boolean
 }
 
-export interface CameraData {
-  center: [number, number]
-  zoom: number
-  bearing?: number
-  pitch?: number
-}
+const openStreetMapStyle: StyleSpecification = {
+  version: 8,
+  name: 'Open Street Map',
+  sources: {
+    osm: {
+      type: 'raster',
+      tiles: [
+        'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution: '© OpenStreetMap contributors',
+    },
+  },
+  layers: [
+    {
+      id: 'osm-tiles',
+      type: 'raster',
+      source: 'osm',
+      minzoom: 0,
+      maxzoom: 19,
+    },
+  ],
+};
 
 export default defineComponent({
-  name: 'MapCompare',
+  name: 'ToggleCompare',
   props: {
     mapStyleA: {
-      type: [String, Object] as PropType<StyleSpecification>,
-      required: true,
+      type: [String, Object] as PropType<StyleSpecification | undefined>,
+      required: false,
+      default: openStreetMapStyle,
+    },
+    compareEnabled: {
+      type: Boolean,
+      default: false,
     },
     mapStyleB: {
       type: [String, Object] as PropType<StyleSpecification>,
-      required: true,
+      default: undefined,
     },
     mapLayersA: {
       type: Array as PropType<string[]>,
@@ -99,7 +124,7 @@ export default defineComponent({
       }),
     },
   },
-  emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete'],
+  emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete', 'map-ready'],
   setup(props, { slots, emit }) {
     const containerRef = ref<HTMLElement>();
     const mapARef = ref<HTMLElement>();
@@ -118,8 +143,13 @@ export default defineComponent({
     let mapAPitchEndHandler: (() => void) | null = null;
     let mapARotateEndHandler: (() => void) | null = null;
 
+    // Expose mapA instance
+    const getMapA = () => mapA;
+    defineExpose({
+      getMapA,
+    });
+
     // Helper function to enforce absolute positioning on map containers
-    // MapLibre automatically sets position to relative during initialization/resize
     const enforceAbsolutePosition = () => {
       if (mapARef.value) {
         mapARef.value.style.setProperty('position', 'absolute', 'important');
@@ -128,7 +158,7 @@ export default defineComponent({
         mapARef.value.style.setProperty('width', '100%', 'important');
         mapARef.value.style.setProperty('height', '100%', 'important');
       }
-      if (mapBRef.value) {
+      if (mapBRef.value && props.compareEnabled) {
         mapBRef.value.style.setProperty('position', 'absolute', 'important');
         mapBRef.value.style.setProperty('top', '0', 'important');
         mapBRef.value.style.setProperty('left', '0', 'important');
@@ -179,14 +209,12 @@ export default defineComponent({
     };
 
     const initializeSwiper = () => {
-      if (!mapA || !mapB || !containerRef.value) return;
-
+      if (!mapA || !mapB || !containerRef.value || !props.compareEnabled) return;
       // Unmount existing swiper if it exists
       if (mapCompareInstance) {
         mapCompareInstance.unmount();
         mapCompareInstance = null;
       }
-
       // Initialize map compare with current orientation
       mapCompareInstance = useMapCompare(mapA, mapB, containerRef.value, {
         orientation: props.swiperOptions?.orientation ?? 'vertical',
@@ -196,7 +224,6 @@ export default defineComponent({
       mapCompareInstance.initialize();
 
       // Capture swiper element for Teleport
-      // The swiper is created by useMapCompare and appended to the container
       const orientation = props.swiperOptions?.orientation ?? 'vertical';
       const swiperClass = orientation === 'horizontal'
         ? '.compare-swiper-horizontal'
@@ -210,8 +237,30 @@ export default defineComponent({
       }
     };
 
-    const initializeMaps = async () => {
-      if (!mapARef.value || !mapBRef.value || !containerRef.value) return;
+    const cleanupComparison = () => {
+      if (mapCompareInstance) {
+        mapCompareInstance.unmount();
+        mapCompareInstance = null;
+      }
+      swiperRef.value = null;
+      styleCompare = null;
+
+      if (mapB) {
+        if (mapBResizeHandler) {
+          mapB.off('resize', mapBResizeHandler);
+        }
+        mapB.remove();
+        mapB = null;
+      }
+      mapBResizeHandler = null;
+
+      if (mapARef.value) {
+        mapARef.value.style.clipPath = '';
+      }
+    };
+
+    const initializeMapA = async () => {
+      if (!mapARef.value || !containerRef.value) return;
 
       // Initialize Map A
       mapA = new maplibregl.Map({
@@ -227,97 +276,44 @@ export default defineComponent({
         }),
       });
 
-      // Initialize Map B
-      mapB = new maplibregl.Map({
-        container: mapBRef.value,
-        style: props.mapStyleB,
-        center: props.camera.center,
-        zoom: props.camera.zoom,
-        bearing: props.camera.bearing || 0,
-        pitch: props.camera.pitch || 0,
-        transformRequest: props.transformRequest ? props.transformRequest : (url) => ({
-          url,
-          headers: props.headers,
-        }),
-      });
-
       // Enforce absolute positioning immediately after map creation
-      // MapLibre sets position to relative during initialization
       enforceAbsolutePosition();
 
-      // Wait for maps to be ready before initializing compare
-      await Promise.all([
-        new Promise<void>((resolve) => {
-          if (mapA!.loaded()) {
-            resolve();
-          } else {
-            mapA!.on('load', () => resolve());
-          }
-        }),
-        new Promise<void>((resolve) => {
-          if (mapB!.loaded()) {
-            resolve();
-          } else {
-            mapB!.on('load', () => resolve());
-          }
-        }),
-      ]);
+      // Wait for mapA to be ready
+      await new Promise<void>((resolve) => {
+        if (mapA!.loaded()) {
+          resolve();
+        } else {
+          mapA!.on('load', () => resolve());
+        }
+      });
 
       // Wait for next tick to ensure DOM has computed layout
       await nextTick();
 
-      // Trigger resize on both maps to ensure they have proper dimensions
-      // This is critical when the container height is initially 0
+      // Trigger resize on mapA to ensure it has proper dimensions
       mapA!.resize();
-      mapB!.resize();
 
       // Enforce absolute positioning after resize
-      // MapLibre may reset position to relative during resize
       enforceAbsolutePosition();
 
-      // Wait one more tick after resize to ensure dimensions are updated
+      // Wait one more tick after resize
       await nextTick();
 
-      // Enforce again after nextTick in case MapLibre modified styles
+      // Enforce again after nextTick
       enforceAbsolutePosition();
-
-      // Initialize swiper after maps are loaded and resized
-      initializeSwiper();
 
       // Apply initial layer visibility
       updateLayerVisibility('A');
       updateLayerOrdering('A');
-      updateLayerVisibility('B');
-      updateLayerOrdering('B');
-
-      // Mark loading as complete and emit event
-      isLoading.value = false;
-      emit('loading-complete');
-
-      // Initialized useStyleCompare for adding/removing and modification of alyers
-      styleCompare = useStyleCompare(
-        {
-          mapA,
-          mapB,
-          baseStyleA: mapA.getStyle(),
-          baseStyleB: mapB.getStyle(),
-        },
-      );
 
       // Set up event listeners to re-enforce position after resize events
-      // MapLibre may reset position to relative during resize operations
       mapAResizeHandler = () => {
         enforceAbsolutePosition();
       };
-      mapBResizeHandler = () => {
-        enforceAbsolutePosition();
-      };
       mapA!.on('resize', mapAResizeHandler);
-      mapB!.on('resize', mapBResizeHandler);
 
       // Set up event listeners for map interactions
-      // Since maps are synced, we only need to listen to one map for each event type
-      // We'll listen to mapA and emit events when it finishes
       mapAMoveEndHandler = () => {
         emit('panend', {
           center: mapA!.getCenter().toArray() as [number, number],
@@ -355,6 +351,89 @@ export default defineComponent({
       mapA!.on('zoomend', mapAZoomEndHandler);
       mapA!.on('pitchend', mapAPitchEndHandler);
       mapA!.on('rotateend', mapARotateEndHandler);
+
+      // Emit map-ready event
+      emit('map-ready', mapA);
+    };
+
+    const initializeMapB = async () => {
+      if (!mapBRef.value || !mapA || !props.mapStyleB) return;
+      // Initialize Map B
+      mapB = new maplibregl.Map({
+        container: mapBRef.value,
+        style: props.mapStyleB,
+        center: mapA.getCenter().toArray() as [number, number],
+        zoom: mapA.getZoom(),
+        bearing: mapA.getBearing(),
+        pitch: mapA.getPitch(),
+        transformRequest: props.transformRequest ? props.transformRequest : (url) => ({
+          url,
+          headers: props.headers,
+        }),
+      });
+
+      // Enforce absolute positioning immediately after map creation
+      enforceAbsolutePosition();
+
+      // Wait for mapB to be ready
+      await new Promise<void>((resolve) => {
+        if (mapB!.loaded()) {
+          resolve();
+        } else {
+          mapB!.on('load', () => resolve());
+        }
+      });
+
+      // Wait for next tick to ensure DOM has computed layout
+      await nextTick();
+
+      // Trigger resize on both maps to ensure they have proper dimensions
+      mapA!.resize();
+      mapB!.resize();
+
+      // Enforce absolute positioning after resize
+      enforceAbsolutePosition();
+
+      // Wait one more tick after resize
+      await nextTick();
+
+      // Enforce again after nextTick
+      enforceAbsolutePosition();
+
+      // Initialize swiper after maps are loaded and resized
+      initializeSwiper();
+
+      // Apply initial layer visibility
+      updateLayerVisibility('B');
+      updateLayerOrdering('B');
+
+      // Initialize useStyleCompare for adding/removing and modification of layers
+      styleCompare = useStyleCompare(
+        {
+          mapA,
+          mapB,
+          baseStyleA: mapA.getStyle(),
+          baseStyleB: mapB.getStyle(),
+        },
+      );
+
+      // Set up event listeners to re-enforce position after resize events
+      mapBResizeHandler = () => {
+        enforceAbsolutePosition();
+      };
+      mapB!.on('resize', mapBResizeHandler);
+    };
+
+    const initializeMaps = async () => {
+      await initializeMapA();
+
+      if (props.compareEnabled && props.mapStyleB) {
+        await initializeMapB();
+      }
+
+      // Mark loading as complete and emit event
+      isLoading.value = false;
+      emit('loading-complete');
     };
 
     // Watch for layer changes
@@ -364,17 +443,21 @@ export default defineComponent({
     }, { deep: true });
 
     watch(() => props.mapLayersB, () => {
-      updateLayerVisibility('B');
-      updateLayerOrdering('B');
+      if (props.compareEnabled && mapB) {
+        updateLayerVisibility('B');
+        updateLayerOrdering('B');
+      }
     }, { deep: true });
 
     watch(() => props.layerOrder, () => {
       updateLayerOrdering('A');
-      updateLayerOrdering('B');
+      if (props.compareEnabled && mapB) {
+        updateLayerOrdering('B');
+      }
     });
 
     watch(() => props.mapStyleA, () => {
-      if (styleCompare) {
+      if (styleCompare && props.compareEnabled) {
         styleCompare.updateStyle('A', props.mapStyleA);
       }
       updateLayerVisibility('A');
@@ -382,16 +465,33 @@ export default defineComponent({
     }, { deep: true });
 
     watch(() => props.mapStyleB, () => {
-      if (styleCompare) {
+      if (styleCompare && props.compareEnabled && mapB && props.mapStyleB) {
         styleCompare.updateStyle('B', props.mapStyleB);
       }
-      updateLayerVisibility('B');
-      updateLayerOrdering('B');
+      if (props.compareEnabled && mapB) {
+        updateLayerVisibility('B');
+        updateLayerOrdering('B');
+      }
     }, { deep: true });
+
+    // Watch for compareEnabled changes
+    watch(() => props.compareEnabled, async (enabled) => {
+      if (enabled && props.mapStyleB && mapA && !mapB) {
+        // Enable comparison mode
+        await initializeMapB();
+        isLoading.value = false;
+      } else if (!enabled && mapB) {
+        // Disable comparison mode
+        cleanupComparison();
+        if (mapARef.value) {
+          mapARef.value.style.clipPath = '';
+        }
+      }
+    });
 
     // Watch for swiper orientation changes and reinitialize
     watch(() => props.swiperOptions?.orientation, () => {
-      if (mapA && mapB && mapA.loaded() && mapB.loaded()) {
+      if (props.compareEnabled && mapA && mapB && mapA.loaded() && mapB.loaded()) {
         initializeSwiper();
       }
     });
@@ -401,8 +501,7 @@ export default defineComponent({
     });
 
     onBeforeUnmount(() => {
-      mapCompareInstance?.unmount();
-      mapCompareInstance = null;
+      cleanupComparison();
       if (mapA) {
         if (mapAResizeHandler) {
           mapA.off('resize', mapAResizeHandler);
@@ -422,15 +521,7 @@ export default defineComponent({
         mapA.remove();
         mapA = null;
       }
-      if (mapB) {
-        if (mapBResizeHandler) {
-          mapB.off('resize', mapBResizeHandler);
-        }
-        mapB.remove();
-        mapB = null;
-      }
       mapAResizeHandler = null;
-      mapBResizeHandler = null;
       mapAMoveEndHandler = null;
       mapAZoomEndHandler = null;
       mapAPitchEndHandler = null;
@@ -494,7 +585,8 @@ export default defineComponent({
     class="map-compare-container"
     :style="{
       '--swiper-thickness': `${swiperOpts.thickness}px`,
-      '--swiper-grab-thickness': `${Math.max(swiperOpts.grabThickness, swiperOpts.thickness)}px`,
+      '--swiper-grab-thickness':
+        `${Math.max(swiperOpts.grabThickness, swiperOpts.thickness)}px`,
       '--swiper-handle-size': `${swiperOpts.handleSize}px`,
       '--swiper-line-color': swiperOpts.lineColor,
       '--swiper-handle-color': swiperOpts.handleColor,
@@ -517,6 +609,7 @@ export default defineComponent({
       }"
     />
     <div
+      v-show="compareEnabled"
       ref="mapBRef"
       class="map map-b"
       :style="{
@@ -527,7 +620,7 @@ export default defineComponent({
         height: '100%',
       }"
     />
-    <Teleport v-if="swiperRef && hasIconSlot" :to="swiperRef">
+    <Teleport v-if="swiperRef && hasIconSlot && compareEnabled" :to="swiperRef">
       <div class="custom-swiper-icon">
         <slot name="icon" />
       </div>
