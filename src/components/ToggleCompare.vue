@@ -1,6 +1,6 @@
 <script lang="ts">
 import {
-  defineComponent, ref, onMounted, onBeforeUnmount, watch, PropType, computed, nextTick,
+  defineComponent, ref, onMounted, onBeforeUnmount, watch, PropType, computed, nextTick, defineExpose,
 } from 'vue';
 import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -117,8 +117,7 @@ export default defineComponent({
     },
   },
   emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete', 'map-ready'],
-  expose: ['getMapA'],
-  setup(props, { slots, emit, expose }) {
+  setup(props, { slots, emit }) {
     const containerRef = ref<HTMLElement>();
     const mapARef = ref<HTMLElement>();
     const mapBRef = ref<HTMLElement>();
@@ -138,7 +137,7 @@ export default defineComponent({
 
     // Expose mapA instance
     const getMapA = () => mapA;
-    expose({
+    defineExpose({
       getMapA,
     });
 
@@ -577,17 +576,17 @@ export default defineComponent({
     ref="containerRef"
     class="map-compare-container"
     :style="{
-      '--swiper-thickness': `${swiperOptions.thickness}px`,
+      '--swiper-thickness': `${swiperOpts.thickness}px`,
       '--swiper-grab-thickness':
-        `${Math.max(swiperOptions.grabThickness, swiperOptions.thickness)}px`,
-      '--swiper-handle-size': `${swiperOptions.handleSize}px`,
-      '--swiper-line-color': swiperOptions.lineColor,
-      '--swiper-handle-color': swiperOptions.handleColor,
-      '--swiper-handle-shadow-color': swiperOptions.handleShadowColor,
-      '--swiper-arrow-color': swiperOptions.arrowColor,
-      '--loading-text-color': swiperOptions.loadingTextColor,
-      '--loading-spinner-color': swiperOptions.loadingSpinnerColor,
-      '--loading-spinner-bg-color': swiperOptions.loadingSpinnerBgColor,
+        `${Math.max(swiperOpts.grabThickness, swiperOpts.thickness)}px`,
+      '--swiper-handle-size': `${swiperOpts.handleSize}px`,
+      '--swiper-line-color': swiperOpts.lineColor,
+      '--swiper-handle-color': swiperOpts.handleColor,
+      '--swiper-handle-shadow-color': swiperOpts.handleShadowColor,
+      '--swiper-arrow-color': swiperOpts.arrowColor,
+      '--loading-text-color': swiperOpts.loadingTextColor,
+      '--loading-spinner-color': swiperOpts.loadingSpinnerColor,
+      '--loading-spinner-bg-color': swiperOpts.loadingSpinnerBgColor,
     }"
   >
     <div
