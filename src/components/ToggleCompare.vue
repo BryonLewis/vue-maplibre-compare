@@ -129,6 +129,7 @@ export default defineComponent({
     attributionControl: {
       type: [Object, Boolean] as PropType<maplibregl.AttributionControlOptions | false>,
       required: false,
+      default: () => undefined,
     },
   },
   emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete', 'map-ready-a', 'map-ready-b'],
@@ -149,7 +150,6 @@ export default defineComponent({
     let mapAZoomEndHandler: (() => void) | null = null;
     let mapAPitchEndHandler: (() => void) | null = null;
     let mapARotateEndHandler: (() => void) | null = null;
-
 
     // Helper function to enforce absolute positioning on map containers
     const enforceAbsolutePosition = () => {
@@ -586,8 +586,8 @@ export default defineComponent({
 
 <template>
   <div
-    ref="containerRef"
     :id="mapContainerId"
+    ref="containerRef"
     class="map-compare-container"
     :style="{
       '--swiper-thickness': `${swiperOpts.thickness}px`,

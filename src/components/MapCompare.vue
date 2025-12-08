@@ -101,6 +101,7 @@ export default defineComponent({
     attributionControl: {
       type: [Object, Boolean] as PropType<maplibregl.AttributionControlOptions | false>,
       required: false,
+      default: () => undefined,
     },
   },
   emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete'],

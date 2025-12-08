@@ -2,7 +2,9 @@
 import {
   defineComponent, PropType,
 } from 'vue';
-import { StyleSpecification, RequestParameters, ResourceType } from 'maplibre-gl';
+import {
+  AttributionControlOptions, StyleSpecification, RequestParameters, ResourceType,
+} from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { SwiperOptions, CameraData } from './MapCompare.vue';
 import MapCompare from './MapCompare.vue';
@@ -74,8 +76,9 @@ export default defineComponent({
       }),
     },
     attributionControl: {
-      type: [Object, Boolean] as PropType<maplibregl.AttributionControlOptions | false>,
+      type: [Object, Boolean] as PropType<AttributionControlOptions | false>,
       required: false,
+      default: () => undefined,
     },
   },
   emits: ['panend', 'zoomend', 'pitchend', 'rotateend'],
