@@ -8,7 +8,6 @@ import {
   PropType,
   computed,
   nextTick,
-  defineExpose,
 } from 'vue';
 import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -123,8 +122,17 @@ export default defineComponent({
         darkMode: false,
       }),
     },
+    mapContainerId: {
+      type: String,
+      default: 'mapContainer',
+    },
+    attributionControl: {
+      type: [Object, Boolean] as PropType<maplibregl.AttributionControlOptions | false>,
+      required: false,
+      default: () => undefined,
+    },
   },
-  emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete', 'map-ready'],
+  emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete', 'map-ready-a', 'map-ready-b'],
   setup(props, { slots, emit }) {
     const containerRef = ref<HTMLElement>();
     const mapARef = ref<HTMLElement>();
@@ -142,12 +150,6 @@ export default defineComponent({
     let mapAZoomEndHandler: (() => void) | null = null;
     let mapAPitchEndHandler: (() => void) | null = null;
     let mapARotateEndHandler: (() => void) | null = null;
-
-    // Expose mapA instance
-    const getMapA = () => mapA;
-    defineExpose({
-      getMapA,
-    });
 
     // Helper function to enforce absolute positioning on map containers
     const enforceAbsolutePosition = () => {
@@ -274,6 +276,7 @@ export default defineComponent({
           url,
           headers: props.headers,
         }),
+        attributionControl: props.attributionControl,
       });
 
       // Enforce absolute positioning immediately after map creation
@@ -353,7 +356,7 @@ export default defineComponent({
       mapA!.on('rotateend', mapARotateEndHandler);
 
       // Emit map-ready event
-      emit('map-ready', mapA);
+      emit('map-ready-a', mapA);
     };
 
     const initializeMapB = async () => {
@@ -370,6 +373,7 @@ export default defineComponent({
           url,
           headers: props.headers,
         }),
+        attributionControl: props.attributionControl,
       });
 
       // Enforce absolute positioning immediately after map creation
@@ -422,6 +426,7 @@ export default defineComponent({
         enforceAbsolutePosition();
       };
       mapB!.on('resize', mapBResizeHandler);
+      emit('map-ready-b', mapB);
     };
 
     const initializeMaps = async () => {
@@ -581,6 +586,7 @@ export default defineComponent({
 
 <template>
   <div
+    :id="mapContainerId"
     ref="containerRef"
     class="map-compare-container"
     :style="{

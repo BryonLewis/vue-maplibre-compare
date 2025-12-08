@@ -105,7 +105,7 @@ export default defineComponent({
     const availableStyles = [
       openStreetMapStyle,
       naipStyle,
-      nyImagery
+      nyImagery,
     ]
 
     const selectedStyleIndexA = ref(0)
@@ -115,7 +115,7 @@ export default defineComponent({
     const selectedLayersA = ref<string[]>([])
     const selectedLayersB = ref<string[]>([])
 
-    const handleMapReady = (map: MaplibreMap) => {
+    const handleMapAReady = (map: MaplibreMap) => {
       mapAInstance.value = map;
       mapAInstance.value.setStyle(availableStyles[selectedStyleIndexA.value]);
     }
@@ -145,7 +145,7 @@ export default defineComponent({
       selectedStyleIndexB,
       selectedLayersA,
       selectedLayersB,
-      handleMapReady,
+      handleMapAReady,
       handleToggleCompare,
     }
   }
@@ -214,7 +214,7 @@ export default defineComponent({
         :camera="{ center: [-74.1847, 43.1339], zoom: 9, bearing: 0, pitch: 0 }" 
         :swiperOptions="swiperOptions"
         :compareEnabled="compareEnabled"
-        @map-ready="handleMapReady"
+        @map-ready-a="handleMapAReady"
       />
     </div>
   </div>

@@ -98,6 +98,11 @@ export default defineComponent({
         darkMode: false,
       }),
     },
+    attributionControl: {
+      type: [Object, Boolean] as PropType<maplibregl.AttributionControlOptions | false>,
+      required: false,
+      default: () => undefined,
+    },
   },
   emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete'],
   setup(props, { slots, emit }) {
@@ -225,6 +230,7 @@ export default defineComponent({
           url,
           headers: props.headers,
         }),
+        attributionControl: props.attributionControl,
       });
 
       // Initialize Map B
@@ -239,6 +245,7 @@ export default defineComponent({
           url,
           headers: props.headers,
         }),
+        attributionControl: props.attributionControl,
       });
 
       // Enforce absolute positioning immediately after map creation
