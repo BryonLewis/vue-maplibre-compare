@@ -73,6 +73,10 @@ export default defineComponent({
         arrowColor: '#666',
       }),
     },
+    attributionControl: {
+      type: [Object, Boolean] as PropType<maplibregl.AttributionControlOptions | false>,
+      required: false,
+    },
   },
   emits: ['panend', 'zoomend', 'pitchend', 'rotateend'],
   setup(_props, { emit }) {
@@ -113,6 +117,7 @@ export default defineComponent({
     :layer-order="layerOrder"
     :headers="headers"
     :transform-request="transformRequest"
+    :attribution-control="attributionControl"
     @panend="handlePanEnd"
     @zoomend="handleZoomEnd"
     @pitchend="handlePitchEnd"
