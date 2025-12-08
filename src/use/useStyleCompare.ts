@@ -48,7 +48,9 @@ export function useStyleCompare(options: StyleCompareOptions) {
     sourcesToAdd.forEach((sourceId) => {
       const sourceDef = newStyle.sources ? newStyle.sources[sourceId] : undefined;
       if (sourceDef) {
-        targetMapInstance.addSource(sourceId, sourceDef);
+        if (!targetMapInstance.getSource(sourceId)) {
+          targetMapInstance.addSource(sourceId, sourceDef);
+        }
       }
     });
     // Check tileUrls to see if they are different for existing raster sources
