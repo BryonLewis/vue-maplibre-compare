@@ -376,9 +376,7 @@ export default defineComponent({
         attributionControl: props.attributionControl,
       });
 
-      // Enforce absolute positioning immediately after map creation
-      enforceAbsolutePosition();
-
+      mapBRef.value.style.visibility = 'hidden';
       // Wait for mapB to be ready
       await new Promise<void>((resolve) => {
         if (mapB!.loaded()) {
@@ -387,6 +385,7 @@ export default defineComponent({
           mapB!.on('load', () => resolve());
         }
       });
+      mapBRef.value.style.visibility = 'visible';
 
       // Wait for next tick to ensure DOM has computed layout
       await nextTick();
