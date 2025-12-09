@@ -10,7 +10,7 @@ A Vue 3 component for comparing MapLibre maps side-by-side with a draggable slid
 - Touch and mouse support
 - Built with Vue 3 and TypeScript using `defineComponent`
 - Synchronized map movements (pan, zoom, rotate, pitch)
-- Two components: `MapCompare` (different styles) and `LayerCompare` (same style, different layers)
+- Three components: `MapCompare` (different styles), `LayerCompare` (same style, different layers), and `ToggleCompare` (toggleable comparison mode)
 
 ## Demo
 
@@ -40,9 +40,23 @@ import App from './App.vue'
 const app = createApp(App)
 app.use(MapComparePlugin)
 app.mount('#app')
+
+// Now you can use all three components in your templates:
+// <MapCompare>, <LayerCompare>, and <ToggleCompare>
 ```
 
 ### As a Component
+
+You can also import individual components:
+
+```typescript
+// Import specific components
+import { MapCompare, LayerCompare, ToggleCompare } from 'vue-maplibre-compare'
+import 'vue-maplibre-compare/dist/vue-maplibre-compare.css'
+
+// Or import all at once
+import * as VueMaplibreCompare from 'vue-maplibre-compare'
+```
 
 ```vue
 <template>
@@ -152,8 +166,10 @@ Compare two different map styles side-by-side.
 | `mapLayersA` | `string[]` | No | `[]` | Array of layer IDs to enable in map A. If empty, all layers are shown |
 | `mapLayersB` | `string[]` | No | `[]` | Array of layer IDs to enable in map B. If empty, all layers are shown |
 | `camera` | `{ center: [number, number], zoom: number, pitch: number, bearing: number}`| Yes | `{ center: [-74.5, 40], zoom: 9, pitch: 0, bearing: 0 }` | Camera Location/Orientation settings
+| `layerOrder` | `'topmost' or 'bottommost'` | No | `'topmost'` | Determines in what order layers should be rendered, topmost has the first layer as the highest in the stack, bottommost has the bottom layer as the highest in stack order |
 | `transformRequest` | `function` **[Docs](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/RequestParameters/)** | No | `undefined` | transform invidual requests
-| `headers` | `Record<string, any>` | No | `{}` | Headers to add to requests sent by the map NOTE: this will add to every map request, use transformRequest for more control
+| `headers` | `Record<string, any>` | No | `{}` | Headers to add to requests sent by the map NOTE: this will add to every map request, use transformRequest for more control |
+| `attributionControl` | `AttributionControlOptions \| false` | No | `undefined` | Attribution control options or false to disable |
 | `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
 
 **Emits:**
@@ -164,6 +180,7 @@ Compare two different map styles side-by-side.
 | `zoomend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes zooming the map |
 | `pitchend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes changing the map pitch (tilt) |
 | `rotateend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes rotating the map |
+| `loading-complete` | `void` | Emitted when both maps have finished loading and are ready |
 
 
 
@@ -203,6 +220,7 @@ Compare the same map style with different layer visibility on each side.
 | `layerOrder` | `'topmost' or 'bottommost'` | No | `'topmost'` | Determines in what order layers should be rendered, topmost has the first layer as the highest in the stack, bottommost has the bottom layer as the highest in stack order
 | `headers` | `Record<string, string>` | No | `{}` | Headers to add to requests sent by the map |
 | `transformRequest` | `function` | No | `undefined` | Transform individual requests |
+| `attributionControl` | `AttributionControlOptions \| false` | No | `undefined` | Attribution control options or false to disable |
 | `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
 
 **Emits:**
@@ -215,6 +233,77 @@ The `LayerCompare` component emits the same events as `MapCompare`:
 | `zoomend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes zooming the map |
 | `pitchend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes changing the map pitch (tilt) |
 | `rotateend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes rotating the map |
+
+### ToggleCompare
+
+A hybrid component that can work in single-map mode or comparison mode. Perfect for scenarios where you want to toggle between showing one map or comparing two maps side-by-side.
+
+**Props:**
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `mapStyleA` | `string \| StyleSpecification` | No | OpenStreetMap style | MapLibre style for the primary/left map |
+| `mapStyleB` | `string \| StyleSpecification` | No | `undefined` | MapLibre style for the secondary/right map (only used when compareEnabled is true) |
+| `mapLayersA` | `string[]` | No | `[]` | Array of layer IDs to enable in map A. If empty, all layers are shown |
+| `mapLayersB` | `string[]` | No | `[]` | Array of layer IDs to enable in map B. If empty, all layers are shown |
+| `camera` | `{ center: [number, number], zoom: number, pitch: number, bearing: number}`| No | `{ center: [0, 0], zoom: 1, pitch: 0, bearing: 0 }` | Camera Location/Orientation settings |
+| `compareEnabled` | `boolean` | No | `false` | Whether comparison mode is enabled. When false, shows only mapStyleA |
+| `layerOrder` | `'topmost' or 'bottommost'` | No | `'topmost'` | Determines in what order layers should be rendered |
+| `transformRequest` | `function` | No | `undefined` | Transform individual requests |
+| `headers` | `Record<string, string>` | No | `{}` | Headers to add to requests sent by the map |
+| `mapContainerId` | `string` | No | `'mapContainer'` | ID for the map container element |
+| `attributionControl` | `AttributionControlOptions \| false` | No | `undefined` | Attribution control options or false to disable |
+| `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
+
+**Emits:**
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `panend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes panning the map |
+| `zoomend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes zooming the map |
+| `pitchend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes changing the map pitch (tilt) |
+| `rotateend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes rotating the map |
+| `loading-complete` | `void` | Emitted when the map(s) have finished loading and are ready |
+| `map-ready-a` | `MaplibreMap` | Emitted when map A is ready, provides the map instance |
+| `map-ready-b` | `MaplibreMap` | Emitted when map B is ready, provides the map instance (only in compare mode) |
+
+**Usage:**
+
+```vue
+<template>
+  <div style="width: 100%; height: 600px;">
+    <ToggleCompare
+      :mapStyleA="primaryStyle"
+      :mapStyleB="secondaryStyle"
+      :compareEnabled="isComparing"
+      :camera="{ center: [-74.5, 40], zoom: 9 }"
+      @map-ready-a="onMapAReady"
+      @map-ready-b="onMapBReady"
+    />
+    <button @click="isComparing = !isComparing">
+      {{ isComparing ? 'Single Map' : 'Compare Maps' }}
+    </button>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { ToggleCompare } from 'vue-maplibre-compare'
+import type { Map as MaplibreMap } from 'maplibre-gl'
+
+const isComparing = ref(false)
+const primaryStyle = 'https://demotiles.maplibre.org/style.json'
+const secondaryStyle = 'https://example.com/other-style.json'
+
+const onMapAReady = (map: MaplibreMap) => {
+  console.log('Map A ready:', map)
+}
+
+const onMapBReady = (map: MaplibreMap) => {
+  console.log('Map B ready:', map)
+}
+</script>
+```
 
 ## Development
 
