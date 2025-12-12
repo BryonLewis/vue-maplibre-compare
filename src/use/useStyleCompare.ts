@@ -17,11 +17,12 @@ export function useStyleCompare(options: StyleCompareOptions) {
   // Store current styles
   let currentStyleA = baseStyleA;
   let currentStyleB = baseStyleB;
-  function updateStyle(targetMap: 'A' | 'B', newStyle: StyleSpecification) {
+  function updateStyle(targetMap: 'A' | 'B', newStyle: StyleSpecification | string) {
+    if (typeof newStyle === 'string') return;
     const currentStyle = targetMap === 'A' ? currentStyleA : currentStyleB;
     // Check the sources and layers for the new map
     const currentSourceKeys = new Set(Object.keys(currentStyle.sources || {}));
-    const newSourceKeys = new Set(Object.keys(newStyle.sources || {}));
+    const newSourceKeys = new Set(Object.keys(typeof newStyle === 'string' ? {} : newStyle?.sources || {}));
     // Get new and removed sources
     const sourcesToAdd = Array.from(newSourceKeys).filter((key) => !currentSourceKeys.has(key));
     const sourcesToRemove = Array.from(currentSourceKeys).filter((key) => !newSourceKeys.has(key));
@@ -46,7 +47,7 @@ export function useStyleCompare(options: StyleCompareOptions) {
     });
     // then add new sources
     sourcesToAdd.forEach((sourceId) => {
-      const sourceDef = newStyle.sources ? newStyle.sources[sourceId] : undefined;
+      const sourceDef = newStyle?.sources ? newStyle.sources[sourceId] : undefined;
       if (sourceDef) {
         if (!targetMapInstance.getSource(sourceId)) {
           targetMapInstance.addSource(sourceId, sourceDef);
