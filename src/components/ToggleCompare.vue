@@ -65,7 +65,7 @@ export default defineComponent({
   name: 'ToggleCompare',
   props: {
     mapStyleA: {
-      type: [String, Object] as PropType<StyleSpecification | undefined>,
+      type: [String, Object] as PropType<StyleSpecification | string | undefined>,
       required: false,
       default: openStreetMapStyle,
     },
