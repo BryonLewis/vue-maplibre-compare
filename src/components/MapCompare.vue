@@ -46,11 +46,11 @@ export default defineComponent({
   name: 'MapCompare',
   props: {
     mapStyleA: {
-      type: [String, Object] as PropType<StyleSpecification>,
+      type: [String, Object] as PropType<StyleSpecification | string>,
       required: true,
     },
     mapStyleB: {
-      type: [String, Object] as PropType<StyleSpecification>,
+      type: [String, Object] as PropType<StyleSpecification | string>,
       required: true,
     },
     mapLayersA: {
