@@ -4,7 +4,7 @@ import {
 } from 'vitest';
 import { createApp } from 'vue';
 // eslint-disable-next-line import/extensions
-import MapComparePlugin, { MapCompare, LayerCompare } from '@/index';
+import MapComparePlugin, { MapCompare, ToggleCompare } from '@/index';
 
 describe('index.ts exports', () => {
   beforeEach(() => {
@@ -16,9 +16,9 @@ describe('index.ts exports', () => {
     expect(MapCompare.name).toBe('MapCompare');
   });
 
-  it('exports LayerCompare component', () => {
-    expect(LayerCompare).toBeDefined();
-    expect(LayerCompare.name).toBe('LayerCompare');
+  it('exports ToggleCompare component', () => {
+    expect(ToggleCompare).toBeDefined();
+    expect(ToggleCompare.name).toBe('ToggleCompare');
   });
 
   it('exports MapComparePlugin', () => {
@@ -36,7 +36,7 @@ describe('index.ts exports', () => {
 
     // Check if components are registered
     expect(app.component('MapCompare')).toBeDefined();
-    expect(app.component('LayerCompare')).toBeDefined();
+    expect(app.component('ToggleCompare')).toBeDefined();
   });
 
   it('registers components with correct names', () => {
@@ -47,9 +47,9 @@ describe('index.ts exports', () => {
     app.use(MapComparePlugin);
 
     const mapCompareComponent = app.component('MapCompare');
-    const layerCompareComponent = app.component('LayerCompare');
+    const toggleCompareComponent = app.component('ToggleCompare');
 
     expect(mapCompareComponent).toBe(MapCompare);
-    expect(layerCompareComponent).toBe(LayerCompare);
+    expect(toggleCompareComponent).toBe(ToggleCompare);
   });
 });

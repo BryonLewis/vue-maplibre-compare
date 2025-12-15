@@ -5,12 +5,12 @@ A Vue 3 component for comparing MapLibre maps side-by-side with a draggable slid
 ## Features
 
 - Side-by-side map comparison with smooth dragging slider
-- Support for different MapLibre styles on each side
+- Support for different MapLibre styles on each side, or same style with different layers
 - Layer visibility control for both maps
 - Touch and mouse support
 - Built with Vue 3 and TypeScript using `defineComponent`
 - Synchronized map movements (pan, zoom, rotate, pitch)
-- Three components: `MapCompare` (different styles), `LayerCompare` (same style, different layers), and `ToggleCompare` (toggleable comparison mode)
+- Two main components: `MapCompare` (supports both different styles and same style with different layers), and `ToggleCompare` (toggleable comparison mode)
 
 ## Demo
 
@@ -41,8 +41,8 @@ const app = createApp(App)
 app.use(MapComparePlugin)
 app.mount('#app')
 
-// Now you can use all three components in your templates:
-// <MapCompare>, <LayerCompare>, and <ToggleCompare>
+// Now you can use the components in your templates:
+// <MapCompare> and <ToggleCompare>
 ```
 
 ### As a Component
@@ -51,7 +51,7 @@ You can also import individual components:
 
 ```typescript
 // Import specific components
-import { MapCompare, LayerCompare, ToggleCompare } from 'vue-maplibre-compare'
+import { MapCompare, ToggleCompare } from 'vue-maplibre-compare'
 import 'vue-maplibre-compare/dist/vue-maplibre-compare.css'
 
 // Or import all at once
@@ -61,11 +61,20 @@ import * as VueMaplibreCompare from 'vue-maplibre-compare'
 ```vue
 <template>
   <div style="width: 100%; height: 600px;">
+    <!-- Compare two different map styles -->
     <MapCompare
-      :mapStyleA="styleA"
-      :mapStyleB="styleB"
-      :mapLayersA="layersA"
-      :mapLayersB="layersB"
+      :map-style-a="styleA"
+      :map-style-b="styleB"
+      :map-layers-a="layersA"
+      :map-layers-b="layersB"
+      :camera="{ center: [-74.5, 40], zoom: 9 }"
+    />
+    
+    <!-- Or compare different layers from the same style (mapStyleB is optional) -->
+    <MapCompare
+      :map-style-a="styleA"
+      :map-layers-a="layersA"
+      :map-layers-b="layersB"
       :camera="{ center: [-74.5, 40], zoom: 9 }"
     />
   </div>
@@ -128,25 +137,24 @@ const redStyle: StyleSpecification = {
 </template>
 ```
 
-### LayerCompare Component
+### Comparing Layers from the Same Style
 
-The `LayerCompare` component uses a single map style and shows different layers on each side:
+The `MapCompare` component supports comparing different layers from the same map style by omitting the `mapStyleB` prop. When `mapStyleB` is not provided, it defaults to `mapStyleA`:
 
 ```vue
 <template>
   <div style="width: 100%; height: 600px;">
-    <LayerCompare
-      :mapStyle="'https://demotiles.maplibre.org/style.json'"
-      :mapLayersA="['water', 'roads']"
-      :mapLayersB="['water', 'buildings', 'parks']"
-      :center="[-74.5, 40]"
-      :zoom="9"
+    <MapCompare
+      :map-style-a="'https://demotiles.maplibre.org/style.json'"
+      :map-layers-a="['water', 'roads']"
+      :map-layers-b="['water', 'buildings', 'parks']"
+      :camera="{ center: [-74.5, 40], zoom: 9 }"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { LayerCompare } from 'vue-maplibre-compare'
+import { MapCompare } from 'vue-maplibre-compare'
 import 'vue-maplibre-compare/dist/vue-maplibre-compare.css'
 </script>
 ```
@@ -155,14 +163,14 @@ import 'vue-maplibre-compare/dist/vue-maplibre-compare.css'
 
 ### MapCompare
 
-Compare two different map styles side-by-side.
+Compare two different map styles side-by-side, or compare different layers from the same style.
 
 **Props:**
 
 | Prop | Type | Required | Default | Description |
 |------|------|----------|---------|-------------|
 | `mapStyleA` | `string \| StyleSpecification` | Yes | - | MapLibre style for left/first map |
-| `mapStyleB` | `string \| StyleSpecification` | Yes | - | MapLibre style for right/second map |
+| `mapStyleB` | `string \| StyleSpecification` | No | `mapStyleA` | MapLibre style for right/second map. If not provided, uses `mapStyleA` (useful for comparing different layers from the same style) |
 | `mapLayersA` | `string[]` | No | `[]` | Array of layer IDs to enable in map A. If empty, all layers are shown |
 | `mapLayersB` | `string[]` | No | `[]` | Array of layer IDs to enable in map B. If empty, all layers are shown |
 | `camera` | `{ center: [number, number], zoom: number, pitch: number, bearing: number}`| Yes | `{ center: [-74.5, 40], zoom: 9, pitch: 0, bearing: 0 }` | Camera Location/Orientation settings
@@ -204,35 +212,6 @@ interface SwiperOptions {
 
 The component now includes built-in support for the `pmtiles` protocol. You can use `pmtiles://` URLs directly in your style sources.
 
-
-### LayerCompare
-
-Compare the same map style with different layer visibility on each side.
-
-**Props:**
-
-| Prop | Type | Required | Default | Description |
-|------|------|----------|---------|-------------|
-| `mapStyle` | `string \| StyleSpecification` | Yes | - | MapLibre style for both maps |
-| `mapLayersA` | `string[]` | No | `[]` | Array of layer IDs to enable in map A. If empty, all layers are shown |
-| `mapLayersB` | `string[]` | No | `[]` | Array of layer IDs to enable in map B. If empty, all layers are shown |
-| `camera` | `{ center: [number, number], zoom: number, pitch: number, bearing: number}`| Yes | `{ center: [-74.5, 40], zoom: 9, pitch: 0, bearing: 0 }` | Camera Location/Orientation settings
-| `layerOrder` | `'topmost' or 'bottommost'` | No | `'topmost'` | Determines in what order layers should be rendered, topmost has the first layer as the highest in the stack, bottommost has the bottom layer as the highest in stack order
-| `headers` | `Record<string, string>` | No | `{}` | Headers to add to requests sent by the map |
-| `transformRequest` | `function` | No | `undefined` | Transform individual requests |
-| `attributionControl` | `AttributionControlOptions \| false` | No | `undefined` | Attribution control options or false to disable |
-| `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
-
-**Emits:**
-
-The `LayerCompare` component emits the same events as `MapCompare`:
-
-| Event | Payload | Description |
-|-------|---------|-------------|
-| `panend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes panning the map |
-| `zoomend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes zooming the map |
-| `pitchend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes changing the map pitch (tilt) |
-| `rotateend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes rotating the map |
 
 ### ToggleCompare
 

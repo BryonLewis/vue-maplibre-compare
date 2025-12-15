@@ -25,7 +25,7 @@ export interface SwiperOptions {
 
 export interface MapCompareProps {
   mapStyleA: string | StyleSpecification
-  mapStyleB: string | StyleSpecification
+  mapStyleB?: string | StyleSpecification
   mapLayersA?: string[]
   mapLayersB?: string[]
   center?: [number, number]
@@ -51,7 +51,8 @@ export default defineComponent({
     },
     mapStyleB: {
       type: [String, Object] as PropType<StyleSpecification | string>,
-      required: true,
+      required: false,
+      default: undefined,
     },
     mapLayersA: {
       type: Array as PropType<string[]>,
@@ -233,10 +234,10 @@ export default defineComponent({
         attributionControl: props.attributionControl,
       });
 
-      // Initialize Map B
+      // Initialize Map B (use mapStyleA if mapStyleB is not provided)
       mapB = new maplibregl.Map({
         container: mapBRef.value,
-        style: props.mapStyleB,
+        style: props.mapStyleB || props.mapStyleA,
         center: props.camera.center,
         zoom: props.camera.zoom,
         bearing: props.camera.bearing || 0,
@@ -390,7 +391,7 @@ export default defineComponent({
 
     watch(() => props.mapStyleB, () => {
       if (styleCompare) {
-        styleCompare.updateStyle('B', props.mapStyleB);
+        styleCompare.updateStyle('B', props.mapStyleB || props.mapStyleA);
       }
       updateLayerVisibility('B');
       updateLayerOrdering('B');
