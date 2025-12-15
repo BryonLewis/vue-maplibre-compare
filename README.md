@@ -159,6 +159,48 @@ import 'vue-maplibre-compare/dist/vue-maplibre-compare.css'
 </script>
 ```
 
+## Choosing the Right Component
+
+This library provides two main components for map comparison. Here's when to use each:
+
+### Use `MapCompare` when:
+
+- **Always-on comparison**: You want to display two maps side-by-side at all times
+- **Static comparison views**: The comparison state doesn't need to change dynamically
+- **Simpler implementation**: You don't need toggle functionality or single-map mode
+- **Performance**: You want a lighter component that only handles comparison mode
+
+**Common use cases:**
+- Before/after visualizations (e.g., showing map changes over time)
+- Style comparison pages (comparing different map styles)
+- Layer visibility comparisons (showing different layer combinations)
+- Documentation or demo pages with fixed comparison views
+
+### Use `ToggleCompare` when:
+
+- **Dynamic toggling**: Users need to switch between single-map and comparison modes
+- **Optional comparison**: Comparison is a feature that can be enabled/disabled
+- **Space optimization**: You want to show a full-width map by default, with comparison as an option
+- **User-controlled views**: Users should control when to compare maps
+- **Map instance access**: You need direct access to map instances via `map-ready-a` and `map-ready-b` events
+
+**Common use cases:**
+- Interactive map applications with a "Compare" toggle button
+- Map viewers where comparison is an optional feature
+- Applications where users can choose to view one map or compare two
+- Scenarios requiring programmatic access to map instances
+
+### Quick Decision Guide
+
+| Requirement | Component |
+|------------|-----------|
+| Always show two maps side-by-side | `MapCompare` |
+| Need to toggle between single map and comparison | `ToggleCompare` |
+| Simple, static comparison view | `MapCompare` |
+| User-controlled comparison feature | `ToggleCompare` |
+| Need map instance events (`map-ready-a`, `map-ready-b`) | `ToggleCompare` |
+| Fixed comparison layout | `MapCompare` |
+
 ## Components
 
 ### MapCompare
