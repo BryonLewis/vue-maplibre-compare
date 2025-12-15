@@ -92,7 +92,9 @@ export function useStyleCompare(options: StyleCompareOptions) {
     // Add new layers
     (newStyle.layers || []).forEach((layer) => {
       if (layersToAdd.includes(layer.id)) {
-        targetMapInstance.addLayer(layer);
+        if (!targetMapInstance.getLayer(layer.id)) {
+          targetMapInstance.addLayer(layer);
+        }
       }
     });
     // Now we need to check for layers that exist in both styles and update their properties if they changed

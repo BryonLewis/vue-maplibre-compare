@@ -169,12 +169,22 @@ export default defineComponent({
       }
     };
 
-    const updateLayerVisibility = (mapType: 'A' | 'B') => {
+    const updateLayers = (mapType: 'A' | 'B') => {
+      const map = mapType === 'A' ? mapA : mapB;
+      if (!map) return;
+      if (!map.isStyleLoaded()) {
+      map.once('style.load', () => {
+        updateLayerVisibilityandOrdering(mapType);
+      });
+    } else {
+      updateLayerVisibilityandOrdering(mapType);
+    }
+    };
+
+    const updateLayerVisibilityandOrdering = (mapType: 'A' | 'B') => {
       const map = mapType === 'A' ? mapA : mapB;
       const enabledLayers = mapType === 'A' ? props.mapLayersA : props.mapLayersB;
-
-      if (!map || !map.isStyleLoaded()) return;
-
+      if (!map) return;
       const style = map.getStyle();
       if (!style || !style.layers) return;
 
@@ -188,13 +198,13 @@ export default defineComponent({
           }
         });
       }
+        updateLayerOrdering(mapType);
     };
 
     const updateLayerOrdering = (mapType: 'A' | 'B') => {
       const map = mapType === 'A' ? mapA : mapB;
       const enabledLayers = mapType === 'A' ? props.mapLayersA : props.mapLayersB;
-
-      if (!map || !map.isStyleLoaded()) return;
+      if (!map) return;
       if (!enabledLayers || enabledLayers.length === 0) return;
 
       // Reorder layers based on layerOrder prop
@@ -307,8 +317,7 @@ export default defineComponent({
       enforceAbsolutePosition();
 
       // Apply initial layer visibility
-      updateLayerVisibility('A');
-      updateLayerOrdering('A');
+      updateLayers('A');
 
       // Set up event listeners to re-enforce position after resize events
       mapAResizeHandler = () => {
@@ -407,8 +416,7 @@ export default defineComponent({
       initializeSwiper();
 
       // Apply initial layer visibility
-      updateLayerVisibility('B');
-      updateLayerOrdering('B');
+      updateLayers('B');
 
       // Initialize useStyleCompare for adding/removing and modification of layers
       styleCompare = useStyleCompare(
@@ -442,14 +450,12 @@ export default defineComponent({
 
     // Watch for layer changes
     watch(() => props.mapLayersA, () => {
-      updateLayerVisibility('A');
-      updateLayerOrdering('A');
+      updateLayers('A');
     }, { deep: true });
 
     watch(() => props.mapLayersB, () => {
       if (props.compareEnabled && mapB) {
-        updateLayerVisibility('B');
-        updateLayerOrdering('B');
+        updateLayers('B');
       }
     }, { deep: true });
 
@@ -464,8 +470,7 @@ export default defineComponent({
       if (styleCompare && props.compareEnabled) {
         styleCompare.updateStyle('A', props.mapStyleA);
       }
-      updateLayerVisibility('A');
-      updateLayerOrdering('A');
+      updateLayers('A');
     }, { deep: true });
 
     watch(() => props.mapStyleB, () => {
@@ -473,8 +478,7 @@ export default defineComponent({
         styleCompare.updateStyle('B', props.mapStyleB);
       }
       if (props.compareEnabled && mapB) {
-        updateLayerVisibility('B');
-        updateLayerOrdering('B');
+        updateLayers('B');
       }
     }, { deep: true });
 
