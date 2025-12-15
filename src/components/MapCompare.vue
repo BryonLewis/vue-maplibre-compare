@@ -384,9 +384,18 @@ export default defineComponent({
     watch(() => props.mapStyleA, () => {
       if (styleCompare) {
         styleCompare.updateStyle('A', props.mapStyleA);
+        // If mapStyleB is not provided, also update map B with the same style
+        if (!props.mapStyleB) {
+          styleCompare.updateStyle('B', props.mapStyleA);
+        }
       }
       updateLayerVisibility('A');
       updateLayerOrdering('A');
+      // If mapStyleB is not provided, also update map B layer visibility/ordering
+      if (!props.mapStyleB) {
+        updateLayerVisibility('B');
+        updateLayerOrdering('B');
+      }
     }, { deep: true });
 
     watch(() => props.mapStyleB, () => {
