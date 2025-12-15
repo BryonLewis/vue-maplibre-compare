@@ -1,13 +1,13 @@
 <script lang="ts">
 import { defineComponent, ref, computed, PropType, watch } from 'vue'
-import { LayerCompare } from '../../src/index'
+import { MapCompare } from '../../src/index'
 import type { StyleSpecification, GeoJSONSourceSpecification } from 'maplibre-gl'
 import type { SwiperOptions } from '../../src/components/MapCompare.vue'
 
 export default defineComponent({
   name: 'DemoLayerCompare',
   components: {
-    LayerCompare
+    MapCompare
   },
   props: {
     swiperOptions: {
@@ -619,13 +619,13 @@ export default defineComponent({
     </div>
 
     <div class="map-container">
-      <LayerCompare
-        :mapStyle="mapStyle"
-        :mapLayersA="mapLayersA"
-        :mapLayersB="mapLayersB"
+      <MapCompare
+        :map-style-a="mapStyle"
+        :map-layers-a="mapLayersA"
+        :map-layers-b="mapLayersB"
         :camera="{center, zoom: 9, bearing: 0, pitch: 0}"
-        :swiperOptions="swiperOptions"
-        :layerOrder="layerOrder"
+        :swiper-options="swiperOptions"
+        :layer-order="layerOrder"
       />
     </div>
   </div>
