@@ -232,7 +232,6 @@ export default defineComponent({
           const bounds = containerRef.value.getBoundingClientRect();
           const isHorizontal = orientation === 'horizontal';
           const dimension = isHorizontal ? bounds.height : bounds.width;
-          
           if (dimension > 0) {
             const percentage = (data.currentPosition / dimension) * 100;
             emit('sliderend', {

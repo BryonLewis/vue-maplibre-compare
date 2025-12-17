@@ -169,17 +169,23 @@ export default defineComponent({
         mapBRef.value.style.setProperty('height', '100%', 'important');
       }
     };
-
-    const updateLayers = (mapType: 'A' | 'B') => {
+    const updateLayerOrdering = (mapType: 'A' | 'B') => {
       const map = mapType === 'A' ? mapA : mapB;
+      const enabledLayers = mapType === 'A' ? props.mapLayersA : props.mapLayersB;
       if (!map) return;
-      if (!map.isStyleLoaded()) {
-      map.once('style.load', () => {
-        updateLayerVisibilityandOrdering(mapType);
+      if (!enabledLayers || enabledLayers.length === 0) return;
+
+      // Reorder layers based on layerOrder prop
+      const layersInStyle = map.getStyle().layers || [];
+      const orderedLayers = props.layerOrder === 'topmost'
+        ? enabledLayers
+        : [...enabledLayers].reverse();
+
+      orderedLayers.forEach((layerId) => {
+        if (layersInStyle.find((l) => l.id === layerId)) {
+          map.moveLayer(layerId);
+        }
       });
-    } else {
-      updateLayerVisibilityandOrdering(mapType);
-    }
     };
 
     const updateLayerVisibilityandOrdering = (mapType: 'A' | 'B') => {
@@ -199,26 +205,19 @@ export default defineComponent({
           }
         });
       }
-        updateLayerOrdering(mapType);
+      updateLayerOrdering(mapType);
     };
 
-    const updateLayerOrdering = (mapType: 'A' | 'B') => {
+    const updateLayers = (mapType: 'A' | 'B') => {
       const map = mapType === 'A' ? mapA : mapB;
-      const enabledLayers = mapType === 'A' ? props.mapLayersA : props.mapLayersB;
       if (!map) return;
-      if (!enabledLayers || enabledLayers.length === 0) return;
-
-      // Reorder layers based on layerOrder prop
-      const layersInStyle = map.getStyle().layers || [];
-      const orderedLayers = props.layerOrder === 'topmost'
-        ? enabledLayers
-        : [...enabledLayers].reverse();
-
-      orderedLayers.forEach((layerId) => {
-        if (layersInStyle.find((l) => l.id === layerId)) {
-          map.moveLayer(layerId);
-        }
-      });
+      if (!map.isStyleLoaded()) {
+        map.once('style.load', () => {
+          updateLayerVisibilityandOrdering(mapType);
+        });
+      } else {
+        updateLayerVisibilityandOrdering(mapType);
+      }
     };
 
     const initializeSwiper = () => {
@@ -265,7 +264,7 @@ export default defineComponent({
           const bounds = containerRef.value.getBoundingClientRect();
           const isHorizontal = orientation === 'horizontal';
           const dimension = isHorizontal ? bounds.height : bounds.width;
-          
+
           if (dimension > 0) {
             const percentage = (data.currentPosition / dimension) * 100;
             emit('sliderend', {
