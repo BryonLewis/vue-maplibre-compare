@@ -231,6 +231,7 @@ Compare two different map styles side-by-side, or compare different layers from 
 | `pitchend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes changing the map pitch (tilt) |
 | `rotateend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes rotating the map |
 | `loading-complete` | `void` | Emitted when both maps have finished loading and are ready |
+| `sliderend` | `{ percentage: number, position: number }` | Emitted when the user finishes dragging the slider. `percentage` is 0-100 representing how much of mapA is visible (0% = all mapB, 100% = all mapA). `position` is the pixel position of the slider. |
 
 
 
@@ -285,6 +286,7 @@ A hybrid component that can work in single-map mode or comparison mode. Perfect 
 | `pitchend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes changing the map pitch (tilt) |
 | `rotateend` | `{ center: [number, number], zoom: number, bearing: number, pitch: number }` | Emitted when the user finishes rotating the map |
 | `loading-complete` | `void` | Emitted when the map(s) have finished loading and are ready |
+| `sliderend` | `{ percentage: number, position: number }` | Emitted when the user finishes dragging the slider. `percentage` is 0-100 representing how much of mapA is visible (0% = all mapB, 100% = all mapA). `position` is the pixel position of the slider. |
 | `map-ready-a` | `MaplibreMap` | Emitted when map A is ready, provides the map instance |
 | `map-ready-b` | `MaplibreMap` | Emitted when map B is ready, provides the map instance (only in compare mode) |
 
