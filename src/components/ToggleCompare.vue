@@ -132,7 +132,7 @@ export default defineComponent({
       default: () => undefined,
     },
   },
-  emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete', 'map-ready-a', 'map-ready-b'],
+  emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete', 'map-ready-a', 'map-ready-b', 'sliderend'],
   setup(props, { slots, emit }) {
     const containerRef = ref<HTMLElement>();
     const mapARef = ref<HTMLElement>();
@@ -150,6 +150,7 @@ export default defineComponent({
     let mapAZoomEndHandler: (() => void) | null = null;
     let mapAPitchEndHandler: (() => void) | null = null;
     let mapARotateEndHandler: (() => void) | null = null;
+    let sliderEndHandler: ((data: { currentPosition: number | null }) => void) | null = null;
 
     // Helper function to enforce absolute positioning on map containers
     const enforceAbsolutePosition = () => {
@@ -224,6 +225,9 @@ export default defineComponent({
       if (!mapA || !mapB || !containerRef.value || !props.compareEnabled) return;
       // Unmount existing swiper if it exists
       if (mapCompareInstance) {
+        if (sliderEndHandler) {
+          mapCompareInstance.off('slideend', sliderEndHandler);
+        }
         mapCompareInstance.unmount();
         mapCompareInstance = null;
       }
@@ -247,9 +251,38 @@ export default defineComponent({
           swiperRef.value.classList.add('has-custom-icon');
         }
       }
+
+      // Set up slider end event listener
+      if (mapCompareInstance) {
+        // Remove existing handler if it exists
+        if (sliderEndHandler) {
+          mapCompareInstance.off('slideend', sliderEndHandler);
+        }
+
+        sliderEndHandler = (data: { currentPosition: number | null }) => {
+          if (!containerRef.value || data.currentPosition === null) return;
+
+          const bounds = containerRef.value.getBoundingClientRect();
+          const isHorizontal = orientation === 'horizontal';
+          const dimension = isHorizontal ? bounds.height : bounds.width;
+          
+          if (dimension > 0) {
+            const percentage = (data.currentPosition / dimension) * 100;
+            emit('sliderend', {
+              percentage: Math.round(percentage * 100) / 100, // Round to 2 decimal places
+              position: data.currentPosition,
+            });
+          }
+        };
+
+        mapCompareInstance.on('slideend', sliderEndHandler);
+      }
     };
 
     const cleanupComparison = () => {
+      if (mapCompareInstance && sliderEndHandler) {
+        mapCompareInstance.off('slideend', sliderEndHandler);
+      }
       if (mapCompareInstance) {
         mapCompareInstance.unmount();
         mapCompareInstance = null;
@@ -534,6 +567,7 @@ export default defineComponent({
       mapAZoomEndHandler = null;
       mapAPitchEndHandler = null;
       mapARotateEndHandler = null;
+      sliderEndHandler = null;
     });
 
     // Computed swiper options with defaults and dark mode support
