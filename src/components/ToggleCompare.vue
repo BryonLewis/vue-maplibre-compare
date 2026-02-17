@@ -9,7 +9,7 @@ import {
   computed,
   nextTick,
 } from 'vue';
-import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl';
+import maplibregl, { Map as MaplibreMap, StyleSpecification, type WebGLContextAttributesWithType } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Protocol } from 'pmtiles';
 import { useMapCompare } from '../use/useMapCompare';
@@ -33,6 +33,7 @@ export interface ToggleCompareProps {
   headers?: Record<string, string>
   swiperOptions?: SwiperOptions
   compareEnabled?: boolean
+  canvasContextAttributes?: WebGLContextAttributesWithType
 }
 
 const openStreetMapStyle: StyleSpecification = {
@@ -130,6 +131,10 @@ export default defineComponent({
       type: [Object, Boolean] as PropType<maplibregl.AttributionControlOptions | false>,
       required: false,
       default: () => undefined,
+    },
+    canvasContextAttributes: {
+      type: Object as PropType<WebGLContextAttributesWithType>,
+      default: undefined,
     },
   },
   emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete', 'map-ready-a', 'map-ready-b', 'sliderend'],
@@ -319,6 +324,10 @@ export default defineComponent({
           headers: props.headers,
         }),
         attributionControl: props.attributionControl,
+        ...(
+          props.canvasContextAttributes
+          && { canvasContextAttributes: props.canvasContextAttributes }
+        ),
       });
 
       // Enforce absolute positioning immediately after map creation
@@ -415,6 +424,9 @@ export default defineComponent({
           headers: props.headers,
         }),
         attributionControl: props.attributionControl,
+        ...(props.canvasContextAttributes && {
+          canvasContextAttributes: props.canvasContextAttributes,
+        }),
       });
 
       mapBRef.value.style.visibility = 'hidden';
