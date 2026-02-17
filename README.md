@@ -220,6 +220,7 @@ Compare two different map styles side-by-side, or compare different layers from 
 | `transformRequest` | `function` **[Docs](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/RequestParameters/)** | No | `undefined` | transform invidual requests
 | `headers` | `Record<string, any>` | No | `{}` | Headers to add to requests sent by the map NOTE: this will add to every map request, use transformRequest for more control |
 | `attributionControl` | `AttributionControlOptions \| false` | No | `undefined` | Attribution control options or false to disable |
+| `canvasContextAttributes` | `WebGLContextAttributesWithType` | No | `undefined` | WebGL context attributes applied to the map canvas (e.g. `{ preserveDrawingBuffer: true }` for exporting or capturing the map). See [MapLibre MapOptions](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#canvascontextattributes) and [MDN WebGL context attributes](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext). |
 | `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
 
 **Emits:**
@@ -275,6 +276,7 @@ A hybrid component that can work in single-map mode or comparison mode. Perfect 
 | `headers` | `Record<string, string>` | No | `{}` | Headers to add to requests sent by the map |
 | `mapContainerId` | `string` | No | `'mapContainer'` | ID for the map container element |
 | `attributionControl` | `AttributionControlOptions \| false` | No | `undefined` | Attribution control options or false to disable |
+| `canvasContextAttributes` | `WebGLContextAttributesWithType` | No | `undefined` | WebGL context attributes applied to the map canvas (e.g. `{ preserveDrawingBuffer: true }` for exporting or capturing the map). See [MapLibre MapOptions](https://maplibre.org/maplibre-gl-js/docs/API/type-aliases/MapOptions/#canvascontextattributes) and [MDN WebGL context attributes](https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext). |
 | `swiperOptions` | `SwiperOptions` | No | `default` | Configuration object for the swiper appearance and behavior |
 
 **Emits:**
