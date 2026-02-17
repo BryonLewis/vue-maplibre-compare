@@ -324,7 +324,10 @@ export default defineComponent({
           headers: props.headers,
         }),
         attributionControl: props.attributionControl,
-        ...(props.canvasContextAttributes && { canvasContextAttributes: props.canvasContextAttributes }),
+        ...(
+          props.canvasContextAttributes
+          && { canvasContextAttributes: props.canvasContextAttributes }
+        ),
       });
 
       // Enforce absolute positioning immediately after map creation
@@ -421,7 +424,9 @@ export default defineComponent({
           headers: props.headers,
         }),
         attributionControl: props.attributionControl,
-        ...(props.canvasContextAttributes && { canvasContextAttributes: props.canvasContextAttributes }),
+        ...(props.canvasContextAttributes && {
+          canvasContextAttributes: props.canvasContextAttributes,
+        }),
       });
 
       mapBRef.value.style.visibility = 'hidden';
