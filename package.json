@@ -1,6 +1,6 @@
 {
   "name": "vue-maplibre-compare",
-  "version": "1.0.17",
+  "version": "1.0.26",
   "description": "A Vue 3 component for comparing MapLibre maps side-by-side with a slider",
   "type": "module",
   "main": "./dist/vue-maplibre-compare.umd.js",
@@ -45,10 +45,11 @@
   "author": "",
   "license": "MIT",
   "peerDependencies": {
-    "maplibre-gl": "^4.0.0 || ^5.0.0",
+    "maplibre-gl": "^4.6.0",
     "vue": "^3.0.0"
   },
   "devDependencies": {
+    "html2canvas": "^1.4.1",
     "@types/lodash": "^4.17.21",
     "@types/mapbox-gl": "^3.4.1",
     "@types/node": "^24.10.1",
@@ -75,7 +76,7 @@
   "dependencies": {
     "@mapbox/mapbox-gl-sync-move": "^0.3.1",
     "lodash": "^4.17.21",
-    "maplibre-gl": "^4.0.0 || ^5.0.0",
+    "maplibre-gl": "^4.6.0",
     "pmtiles": "^4.3.0"
   }
 }

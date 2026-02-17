@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.26](https://github.com/BryonLewis/vue-maplibre-compare/compare/v1.0.25...v1.0.26) (2026-02-17)
+
+### [1.0.25](https://github.com/BryonLewis/vue-maplibre-compare/compare/v1.0.24...v1.0.25) (2026-02-17)
+
+### [1.0.24](https://github.com/BryonLewis/vue-maplibre-compare/compare/v1.0.23...v1.0.24) (2026-02-17)
+
+### [1.0.23](https://github.com/BryonLewis/vue-maplibre-compare/compare/v1.0.22...v1.0.23) (2026-02-17)
+
+### [1.0.22](https://github.com/BryonLewis/vue-maplibre-compare/compare/v1.0.21...v1.0.22) (2026-02-17)
+
+### [1.0.21](https://github.com/BryonLewis/vue-maplibre-compare/compare/v1.0.4...v1.0.21) (2026-02-17)
+
 ### [1.0.16](https://github.com/BryonLewis/vue-maplibre-compare/compare/v1.0.4...v1.0.16) (2025-12-12)
 
 ### [1.0.15](https://github.com/BryonLewis/vue-maplibre-compare/compare/v1.0.4...v1.0.15) (2025-12-12)
