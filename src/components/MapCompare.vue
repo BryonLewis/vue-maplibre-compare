@@ -2,7 +2,7 @@
 import {
   defineComponent, ref, onMounted, onBeforeUnmount, watch, PropType, computed, nextTick,
 } from 'vue';
-import maplibregl, { Map as MaplibreMap, StyleSpecification, type WebGLContextAttributesWithType } from 'maplibre-gl';
+import maplibregl, { Map as MaplibreMap, StyleSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Protocol } from 'pmtiles';
 import { useMapCompare } from '../use/useMapCompare';
@@ -33,7 +33,7 @@ export interface MapCompareProps {
   bearing?: number
   pitch?: number
   swiperOptions?: SwiperOptions
-  canvasContextAttributes?: WebGLContextAttributesWithType
+  preserveDrawingBuffer?: boolean
 }
 
 export interface CameraData {
@@ -105,9 +105,9 @@ export default defineComponent({
       required: false,
       default: () => undefined,
     },
-    canvasContextAttributes: {
-      type: Object as PropType<WebGLContextAttributesWithType>,
-      default: undefined,
+    preserveDrawingBuffer: {
+      type: Boolean,
+      default: false,
     },
   },
   emits: ['panend', 'zoomend', 'pitchend', 'rotateend', 'loading-complete', 'sliderend'],
@@ -266,9 +266,7 @@ export default defineComponent({
           headers: props.headers,
         }),
         attributionControl: props.attributionControl,
-        ...(props.canvasContextAttributes && {
-          canvasContextAttributes: props.canvasContextAttributes,
-        }),
+        preserveDrawingBuffer: props.preserveDrawingBuffer,
       });
 
       // Initialize Map B (use mapStyleA if mapStyleB is not provided)
@@ -284,9 +282,7 @@ export default defineComponent({
           headers: props.headers,
         }),
         attributionControl: props.attributionControl,
-        ...(props.canvasContextAttributes && {
-          canvasContextAttributes: props.canvasContextAttributes,
-        }),
+        preserveDrawingBuffer: props.preserveDrawingBuffer,
       });
 
       // Enforce absolute positioning immediately after map creation

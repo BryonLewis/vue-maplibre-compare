@@ -49,6 +49,7 @@
     "vue": "^3.0.0"
   },
   "devDependencies": {
+    "html2canvas": "^1.4.1",
     "@types/lodash": "^4.17.21",
     "@types/mapbox-gl": "^3.4.1",
     "@types/node": "^24.10.1",

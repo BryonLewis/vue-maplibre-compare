@@ -1,5 +1,6 @@
 <script lang="ts">
 import { defineComponent, ref, computed, PropType, watch } from 'vue'
+import html2canvas from 'html2canvas'
 import { MapCompare } from '../../src/index'
 import type { StyleSpecification, GeoJSONSourceSpecification } from 'maplibre-gl'
 import type { SwiperOptions } from '../../src/components/MapCompare.vue'
@@ -97,6 +98,9 @@ export default defineComponent({
 
     // Map Editor dialog state
     const showMapEditorDialog = ref(false)
+
+    // Screenshot overlay (flash effect)
+    const screenOverlayShown = ref(false)
     
     // Track which layers are enabled in the mapStyle
     const layerEnabled = ref<Record<string, boolean>>({
@@ -360,6 +364,43 @@ export default defineComponent({
       layerEnabled.value[layerId] = !layerEnabled.value[layerId]
     }
 
+    function takeScreenshot(save: boolean) {
+      const screenshotTarget = document.getElementById('screenshot-target')
+      if (screenshotTarget) {
+        html2canvas(screenshotTarget, {
+          useCORS: true,
+          allowTaint: true,
+          ignoreElements: (element) => {
+            return element.classList.contains('loading-indicator')
+          },
+        }).then((canvas) => {
+          canvas.toBlob((blob) => {
+            if (blob) {
+              if (save) {
+                const link = document.createElement('a')
+                link.href = URL.createObjectURL(blob)
+                link.download = 'map_compare_screenshot.png'
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+              } else {
+                const clipboardItem = new ClipboardItem({
+                  'image/png': blob,
+                })
+                navigator.clipboard.write([clipboardItem])
+              }
+              setTimeout(() => {
+                screenOverlayShown.value = true
+                setTimeout(() => {
+                  screenOverlayShown.value = false
+                }, 200)
+              }, 200)
+            }
+          })
+        })
+      }
+    }
+
       return {
       mapStyle,
       allLayers,
@@ -387,6 +428,8 @@ export default defineComponent({
       closeMapEditorDialog,
       layerEnabled,
       toggleLayerEnabled,
+      takeScreenshot,
+      screenOverlayShown,
     }
   }
 })
@@ -411,6 +454,20 @@ export default defineComponent({
               <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
             </svg>
             <span>Colors</span>
+          </button>
+          <button class="screenshot-button" @click="takeScreenshot(true)" title="Save screenshot">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            <span>Screenshot</span>
+          </button>
+          <button class="screenshot-button" @click="takeScreenshot(false)" title="Copy screenshot to clipboard">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy</span>
           </button>
         </div>
       </div>
@@ -618,7 +675,7 @@ export default defineComponent({
       <p><strong>Instructions:</strong> Toggle layer visibility using the eye icons. Use the up/down arrows to reorder layers. Click the settings button to change layer order mode. Click and drag the slider to compare the two map views. Use your mouse or touch to pan, zoom, and rotate both maps simultaneously.</p>
     </div>
 
-    <div class="map-container">
+    <div id="screenshot-target" class="map-container">
       <MapCompare
         :map-style-a="mapStyle"
         :map-layers-a="mapLayersA"
@@ -626,8 +683,10 @@ export default defineComponent({
         :camera="{center, zoom: 9, bearing: 0, pitch: 0}"
         :swiper-options="swiperOptions"
         :layer-order="layerOrder"
+        :preserve-drawing-buffer="true"
       />
     </div>
+    <div v-if="screenOverlayShown" class="screen-overlay" aria-hidden="true" />
   </div>
 </template>
 
@@ -683,10 +742,47 @@ export default defineComponent({
 }
 
 .map-editor-button:hover,
-.color-dialog-button:hover {
+.color-dialog-button:hover,
+.screenshot-button:hover {
   background: #f8f9fa;
   border-color: #3498db;
   color: #3498db;
+}
+
+.screenshot-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: white;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #2c3e50;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.screenshot-button svg {
+  flex-shrink: 0;
+}
+
+.screen-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+  z-index: 9999;
+  animation: screen-flash 0.2s ease-out;
+}
+
+@keyframes screen-flash {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 .map-editor-button svg,
