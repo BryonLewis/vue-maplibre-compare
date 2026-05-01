@@ -81,7 +81,7 @@ export default defineComponent({
             "service=WMS&" +
             "request=GetMap&" +
             "version=1.3.0&" +
-            "layers=0,1,2,3,4&" +
+            "layers=0,1,2,3&" +
             "styles=&" +
             "format=image/png&" +
             "transparent=true&" +

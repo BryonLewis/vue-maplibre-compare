@@ -78,7 +78,7 @@ export default defineComponent({
             "service=WMS&" +
             "request=GetMap&" +
             "version=1.3.0&" +
-            "layers=0,1,2,3,4&" +
+            "layers=0,1,2,3&" +
             "styles=&" +
             "format=image/png&" +
             "transparent=true&" +
@@ -129,7 +129,7 @@ export default defineComponent({
         <h3>Map A Style</h3>
         <select v-model="selectedStyleIndexA">
           <option :value="0">OpenStreetMap Style</option>
-          <option :value="1">NY Imagery</option>
+          <option :value="1">NAIP Imagery</option>
           <option :value="2">NY Imagery</option>
         </select>
       </div>
