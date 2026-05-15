@@ -266,7 +266,9 @@ export default defineComponent({
           headers: props.headers,
         }),
         attributionControl: props.attributionControl,
-        preserveDrawingBuffer: props.preserveDrawingBuffer,
+        canvasContextAttributes: {
+          preserveDrawingBuffer: props.preserveDrawingBuffer,
+        },
       });
 
       // Initialize Map B (use mapStyleA if mapStyleB is not provided)
@@ -282,7 +284,9 @@ export default defineComponent({
           headers: props.headers,
         }),
         attributionControl: props.attributionControl,
-        preserveDrawingBuffer: props.preserveDrawingBuffer,
+        canvasContextAttributes: {
+          preserveDrawingBuffer: props.preserveDrawingBuffer,
+        },
       });
 
       // Enforce absolute positioning immediately after map creation
