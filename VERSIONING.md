@@ -96,14 +96,15 @@ The project includes a GitHub Actions workflow that can be manually triggered to
 
 ### Prerequisites
 
-1. **NPM Token**: You need to add an `NPM_TOKEN` secret to your GitHub repository:
-   - Go to your repository settings
-   - Navigate to "Secrets and variables" > "Actions"
-   - Click "New repository secret"
-   - Name: `NPM_TOKEN`
-   - Value: Your npm access token (create one at https://www.npmjs.com/settings/YOUR_USERNAME/tokens)
+1. **npm trusted publishing (OIDC)**: Configure trusted publishing for this package on npm:
+   - Open the package on [npmjs.com](https://www.npmjs.com/package/vue-maplibre-compare) (or create it first)
+   - Go to **Settings** > **Publishing access** > **Trusted publishers**
+   - Add a GitHub Actions trusted publisher:
+     - **Repository**: `BryonLewis/vue-maplibre-compare`
+     - **Workflow filename**: `publish.yml`
+     - **Environment**: leave empty (workflow does not use a GitHub environment)
 
-2. **GitHub Token**: The `GITHUB_TOKEN` is automatically provided by GitHub Actions, so no setup needed.
+2. **GitHub Token**: The `GITHUB_TOKEN` is automatically provided by GitHub Actions for pushing tags and creating releases.
 
 ### Manual Workflow Trigger
 
